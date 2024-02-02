@@ -1,0 +1,3 @@
+/Users/anees/Documents/image_stitching/anees/CMakeFiles/Features.dir
+/Users/anees/Documents/image_stitching/anees/CMakeFiles/edit_cache.dir
+/Users/anees/Documents/image_stitching/anees/CMakeFiles/rebuild_cache.dir
