@@ -24,12 +24,27 @@ int main(int argc, char **argv)
     orb->detectAndCompute(imRef2, Mat(), keypoints2, descriptors2);
     vector<DMatch> matches;
     Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create("BruteForce-Hamming");
-    std::sort(matches.begin(), matches.end());
+    double max_dist = 0; double min_dist = 100;
     matcher->match(descriptors1, descriptors2, matches, Mat());
-    const int numGoodMatches = matches.size() * GOOD_MATCH_PERCENT;
-    matches.erase(matches.begin()+numGoodMatches, matches.end());
+    for( int i = 0; i < descriptors1.rows; i++ )
+    {
+        double dist = matches[i].distance;
+        if( dist < min_dist ) min_dist = dist;
+        if( dist > max_dist ) max_dist = dist;
+    }
+
+    for( int i = 0; i < descriptors1.rows; i++ )
+    {
+        if( matches[i].distance > 3*min_dist )
+        {
+            auto temp = matches.back();
+            matches.erase(matches.end() - 1); 
+            matches[i] = temp;
+            i--;
+        }
+    }
     Mat imMatches;
-    drawMatches(imRef1, keypoints1, imRef2, keypoints2, matches, imMatches);
+    drawMatches(imRef1, keypoints1, imRef2, keypoints2, matches , imMatches);
     imshow("Matches", imMatches);
     waitKey(0);
     return 0;
