@@ -16,6 +16,11 @@ int main(int argc, char **argv)
     string file2(argv[2]);
     Mat imRef1 = imread(file1, IMREAD_COLOR);
     Mat imRef2 = imread(file2, IMREAD_COLOR);
+
+    Size size(imRef1.rows / 2 , imRef1.cols / 2);
+    resize(imRef1,imRef1,size);
+    resize(imRef2,imRef2,size);
+
     vector<KeyPoint> keypoints1, keypoints2;
     Mat descriptors1, descriptors2;
     Ptr<Feature2D> orb = ORB::create(10000);
@@ -24,7 +29,7 @@ int main(int argc, char **argv)
     orb->detectAndCompute(imRef2, Mat(), keypoints2, descriptors2);
 
     vector<vector<DMatch>> matches;
-    BFMatcher matcher = BFMatcher(NORM_HAMMING2); // Hamming is good for binary string based algorithms , cross checker can be true if ratio is not used
+    BFMatcher matcher = BFMatcher(NORM_HAMMING); // Hamming is good for binary string based algorithms , cross checker can be true if ratio is not used
 
     matcher.knnMatch(descriptors1, descriptors2, matches, 2);
 
@@ -51,7 +56,7 @@ int main(int argc, char **argv)
         }
     }
 
-    Mat H = findHomography(points2, points1, RANSAC, 4);
+    Mat H = findHomography(points2, points1, RANSAC, 6);
 
     imshow("result", imMatches);
     waitKey(0);
