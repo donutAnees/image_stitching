@@ -2,11 +2,10 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/calib3d.hpp>
 #include <iostream>
 #include <vector>
-
-
-const float GOOD_MATCH_PERCENT = 0.15f;
 
 using namespace cv;
 using namespace std;
@@ -15,37 +14,58 @@ int main(int argc, char **argv)
 {
     string file1(argv[1]);
     string file2(argv[2]);
-    Mat imRef1 = imread(file1, IMREAD_GRAYSCALE);
-    Mat imRef2 = imread(file2, IMREAD_GRAYSCALE);
+    Mat imRef1 = imread(file1, IMREAD_COLOR);
+    Mat imRef2 = imread(file2, IMREAD_COLOR);
     vector<KeyPoint> keypoints1, keypoints2;
     Mat descriptors1, descriptors2;
-    Ptr<Feature2D> orb = ORB::create();
+    Ptr<Feature2D> orb = ORB::create(10000);
+
     orb->detectAndCompute(imRef1, Mat(), keypoints1, descriptors1);
     orb->detectAndCompute(imRef2, Mat(), keypoints2, descriptors2);
-    vector<DMatch> matches;
-    Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create("BruteForce-Hamming");
-    double max_dist = 0; double min_dist = 100;
-    matcher->match(descriptors1, descriptors2, matches, Mat());
-    for( int i = 0; i < descriptors1.rows; i++ )
-    {
-        double dist = matches[i].distance;
-        if( dist < min_dist ) min_dist = dist;
-        if( dist > max_dist ) max_dist = dist;
-    }
 
-    for( int i = 0; i < descriptors1.rows; i++ )
+    vector<vector<DMatch>> matches;
+    BFMatcher matcher = BFMatcher(NORM_HAMMING2); // Hamming is good for binary string based algorithms , cross checker can be true if ratio is not used
+
+    matcher.knnMatch(descriptors1, descriptors2, matches, 2);
+
+    vector<DMatch> goodmatches;
+
+    for (int i = 0; i < matches.size(); i++)
     {
-        if( matches[i].distance > 3*min_dist )
+        if (matches[i][0].distance < 0.75 * matches[i][1].distance)
         {
-            auto temp = matches.back();
-            matches.erase(matches.end() - 1); 
-            matches[i] = temp;
-            i--;
+            goodmatches.emplace_back(matches[i][0]);
         }
     }
+
     Mat imMatches;
-    drawMatches(imRef1, keypoints1, imRef2, keypoints2, matches , imMatches);
-    imshow("Matches", imMatches);
+    drawMatches(imRef1, keypoints1, imRef2, keypoints2, goodmatches, imMatches);
+
+    std::vector<Point2f> points1, points2;
+
+    for (size_t i = 0; i < goodmatches.size(); i++)
+    {
+        {
+            points1.push_back(keypoints1[goodmatches[i].queryIdx].pt);
+            points2.push_back(keypoints2[goodmatches[i].trainIdx].pt);
+        }
+    }
+
+    Mat H = findHomography(points2, points1, RANSAC, 4);
+
+    imshow("result", imMatches);
+    waitKey(0);
+
+    Mat result;
+
+    warpPerspective(imRef2, result, H, Size(imRef1.cols + imRef2.cols, max(imRef1.rows, imRef2.rows)));
+    imshow("result", result);
+    waitKey(0);
+    Mat half(result, Rect(0, 0, imRef1.cols, imRef1.rows));
+    imRef1.copyTo(half);
+    imwrite("matches.jpg", imMatches);
+    imshow("result", result);
+
     waitKey(0);
     return 0;
 }

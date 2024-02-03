@@ -832,4 +832,8 @@ CMakeFiles/Features.dir/feature_detection.cpp.o: \
   /opt/homebrew/Cellar/opencv/4.9.0_2/include/opencv4/opencv2/imgcodecs.hpp \
   /opt/homebrew/Cellar/opencv/4.9.0_2/include/opencv4/opencv2/highgui.hpp \
   /opt/homebrew/Cellar/opencv/4.9.0_2/include/opencv4/opencv2/videoio.hpp \
+  /opt/homebrew/Cellar/opencv/4.9.0_2/include/opencv4/opencv2/imgproc.hpp \
+  /opt/homebrew/Cellar/opencv/4.9.0_2/include/opencv4/opencv2/./imgproc/segmentation.hpp \
+  /opt/homebrew/Cellar/opencv/4.9.0_2/include/opencv4/opencv2/calib3d.hpp \
+  /opt/homebrew/Cellar/opencv/4.9.0_2/include/opencv4/opencv2/core/affine.hpp \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.2.sdk/usr/include/c++/v1/iostream

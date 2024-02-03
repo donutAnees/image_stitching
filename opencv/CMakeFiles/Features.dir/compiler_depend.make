@@ -802,7 +802,10 @@ CMakeFiles/Features.dir/feature_detection.cpp.o: feature_detection.cpp \
   /Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include/stdarg.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include/stddef.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include/stdint.h \
+  /opt/homebrew/Cellar/opencv/4.9.0_2/include/opencv4/opencv2/imgproc/segmentation.hpp \
+  /opt/homebrew/Cellar/opencv/4.9.0_2/include/opencv4/opencv2/calib3d.hpp \
   /opt/homebrew/Cellar/opencv/4.9.0_2/include/opencv4/opencv2/core.hpp \
+  /opt/homebrew/Cellar/opencv/4.9.0_2/include/opencv4/opencv2/core/affine.hpp \
   /opt/homebrew/Cellar/opencv/4.9.0_2/include/opencv4/opencv2/core/base.hpp \
   /opt/homebrew/Cellar/opencv/4.9.0_2/include/opencv4/opencv2/core/bufferpool.hpp \
   /opt/homebrew/Cellar/opencv/4.9.0_2/include/opencv4/opencv2/core/check.hpp \
@@ -833,6 +836,7 @@ CMakeFiles/Features.dir/feature_detection.cpp.o: feature_detection.cpp \
   /opt/homebrew/Cellar/opencv/4.9.0_2/include/opencv4/opencv2/flann/miniflann.hpp \
   /opt/homebrew/Cellar/opencv/4.9.0_2/include/opencv4/opencv2/highgui.hpp \
   /opt/homebrew/Cellar/opencv/4.9.0_2/include/opencv4/opencv2/imgcodecs.hpp \
+  /opt/homebrew/Cellar/opencv/4.9.0_2/include/opencv4/opencv2/imgproc.hpp \
   /opt/homebrew/Cellar/opencv/4.9.0_2/include/opencv4/opencv2/opencv_modules.hpp \
   /opt/homebrew/Cellar/opencv/4.9.0_2/include/opencv4/opencv2/videoio.hpp
 
@@ -878,6 +882,8 @@ CMakeFiles/Features.dir/feature_detection.cpp.o: feature_detection.cpp \
 /opt/homebrew/Cellar/opencv/4.9.0_2/include/opencv4/opencv2/core/bufferpool.hpp:
 
 /opt/homebrew/Cellar/opencv/4.9.0_2/include/opencv4/opencv2/core.hpp:
+
+/opt/homebrew/Cellar/opencv/4.9.0_2/include/opencv4/opencv2/imgproc/segmentation.hpp:
 
 /Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include/stddef.h:
 
@@ -1451,6 +1457,8 @@ CMakeFiles/Features.dir/feature_detection.cpp.o: feature_detection.cpp \
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX14.2.sdk/usr/include/math.h:
 
+/opt/homebrew/Cellar/opencv/4.9.0_2/include/opencv4/opencv2/calib3d.hpp:
+
 /Library/Developer/CommandLineTools/SDKs/MacOSX14.2.sdk/usr/include/c++/v1/__iterator/segmented_iterator.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX14.2.sdk/usr/include/c++/v1/__ranges/enable_view.h:
@@ -1913,6 +1921,8 @@ feature_detection.cpp:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX14.2.sdk/usr/include/c++/v1/__bit/rotate.h:
 
+/opt/homebrew/Cellar/opencv/4.9.0_2/include/opencv4/opencv2/core/affine.hpp:
+
 /Library/Developer/CommandLineTools/SDKs/MacOSX14.2.sdk/usr/include/c++/v1/__type_traits/extent.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX14.2.sdk/usr/include/c++/v1/wctype.h:
@@ -2200,6 +2210,8 @@ feature_detection.cpp:
 /Library/Developer/CommandLineTools/SDKs/MacOSX14.2.sdk/usr/include/c++/v1/__algorithm/ranges_replace_copy_if.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX14.2.sdk/usr/include/c++/v1/__algorithm/ranges_partition_point.h:
+
+/opt/homebrew/Cellar/opencv/4.9.0_2/include/opencv4/opencv2/imgproc.hpp:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX14.2.sdk/usr/include/sys/_pthread/_pthread_mutex_t.h:
 
