@@ -41,10 +41,6 @@ public:
     Features(const Mat &image);
 };
 
-class ORB
-{
-};
-
 class BFMatcher
 {
 };
