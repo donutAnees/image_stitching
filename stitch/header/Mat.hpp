@@ -6,13 +6,13 @@
 class Mat
 {
 public:
-    size_t rows, cols;
     // the number of rows and columns
-    short channels;
+    size_t rows, cols;
     // the number of channels
-    unsigned char *data;
+    short channels;
     // the 3 channel image is stored in this array as linear but using the rows , columns and channels we can get into the the form [ [ [r,g,b] , [r,g,b] , [r,g,b] ] ,  [ [r,g,b] , [r,g,b] , [r,g,b] ] , ...]
     // each [r,g,b] is nothing but the individual pixel, and each [ [r,g,b] , [r,g,b] , [r,g,b] ] is the row of pixels
+    unsigned char *data;
     Mat(const std::string &filepath);
     ~Mat();
 };
