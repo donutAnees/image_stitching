@@ -14,6 +14,9 @@ public:
     // each [r,g,b] is nothing but the individual pixel, and each [ [r,g,b] , [r,g,b] , [r,g,b] ] is the row of pixels
     unsigned char *data;
     Mat(const std::string &filepath);
+    Mat(const Mat& image);
+    //convert the 3 channels into 1 channel, by using luminosity method to get the grayscale value of the pixel, grayscale = .3 * R + .59 * G + .11 * B
+    Mat& convertToGray(Mat& image);
     ~Mat();
 };
 
