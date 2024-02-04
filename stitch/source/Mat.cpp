@@ -17,7 +17,7 @@ Mat::Mat(const std::string &filepath)
 
     // size needed to store the image
     size_t data_size = rows * cols * 3;
-    Mat::data = new unsigned char[data_size];
+    Mat::data = new unsigned char[data_size]();
 
     Mat::channels = 3;
 
@@ -28,7 +28,22 @@ Mat::Mat(const std::string &filepath)
     }
 }
 
+Mat::Mat(const Mat& image) {
+    rows = image.rows;
+    cols = image.cols;
+    channels = image.channels;
+    size_t dataSize = rows * cols * channels;
+    data = new unsigned char[dataSize];
+    memcpy(data, image.data, sizeof(image.data));
+}
+
 Mat::~Mat()
 {
     delete[] Mat::data;
+}
+
+Mat& Mat::convertToGray(Mat& image){
+    Mat grayImage = Mat(image);
+    size_t data_size = rows * cols * 3;
+    channels = 1;
 }
