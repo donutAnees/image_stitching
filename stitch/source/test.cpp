@@ -18,8 +18,6 @@ for (size_t i = 0; i < image.rows * image.cols * 3; ++i)
         int pixelValue = image.data[i]; // Get pixel value
         outputFile << static_cast<int>(pixelValue) << " "; // Write pixel value as binary data
     }
-
-
     outputFile.close();
 }
 
