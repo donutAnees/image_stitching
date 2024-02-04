@@ -60,7 +60,7 @@ Mat& Mat::convertToGray(Mat &image)
     size_t data_size = rows * cols * 3;
     unsigned char *newData = new unsigned char[rows * cols];
     size_t counter = 0;
-    for (int i = 0; i < data_size; i += 3)
+    for (int i = 0; i < data_size - 2; i += 3)
     {
         unsigned char r = image.data[i];
         unsigned char g = image.data[i + 1];
@@ -70,3 +70,4 @@ Mat& Mat::convertToGray(Mat &image)
     Mat grayscaleImage = Mat(rows, cols, 1, newData);
     return grayscaleImage;
 }
+
