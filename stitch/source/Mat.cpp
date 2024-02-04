@@ -24,7 +24,9 @@ Mat::Mat(const std::string &filepath)
     // read till the end of the file and store each r,b,g as a single array
     for (size_t i = 0; i < data_size; ++i)
     {
-        image >> Mat::data[i];
+        int pixelValue;
+        image >> pixelValue;
+        Mat::data[i] = static_cast<unsigned char>(pixelValue);
     }
 }
 
@@ -33,19 +35,19 @@ Mat::Mat(const Mat &image)
     rows = image.rows;
     cols = image.cols;
     channels = image.channels;
-    size_t dataSize = rows * cols * channels;
+    size_t dataSize = rows * cols * 3;
     data = new unsigned char[dataSize];
-    memcpy(data, image.data, sizeof(image.data));
+    memcpy(data, image.data, sizeof(unsigned char) * dataSize);
 }
 
-Mat::Mat(int _rows, int _cols, int _channels, unsigned char &_data)
+Mat::Mat(int _rows, int _cols, int _channels, unsigned char *_data)
 {
     rows = _rows;
     cols = _cols;
     channels = _channels;
-    size_t dataSize = rows * cols * channels;
+    size_t dataSize = rows * cols * 3;
     data = new unsigned char[dataSize];
-    memcpy(data, &_data, sizeof(unsigned char) * dataSize);
+    memcpy(data, _data, sizeof(unsigned char) * dataSize);
 }
 
 Mat::~Mat()
@@ -53,21 +55,38 @@ Mat::~Mat()
     delete[] Mat::data;
 }
 
-Mat& Mat::convertToGray(Mat &image)
+Mat convertToGray(Mat &image)
 {
     int rows = image.rows;
     int cols = image.cols;
     size_t data_size = rows * cols * 3;
-    unsigned char *newData = new unsigned char[rows * cols];
-    size_t counter = 0;
+    unsigned char *newData = new unsigned char[data_size];
     for (int i = 0; i < data_size - 2; i += 3)
     {
         unsigned char r = image.data[i];
         unsigned char g = image.data[i + 1];
         unsigned char b = image.data[i + 2];
-        newData[counter++] = 0.3 * r + 0.59 * g + 0.11 * b;
+        newData[i] = 0.3 * r + 0.59 * g + 0.11 * b;
+        newData[i + 1] = 0.3 * r + 0.59 * g + 0.11 * b;
+        newData[i + 2] = 0.3 * r + 0.59 * g + 0.11 * b;
     }
     Mat grayscaleImage = Mat(rows, cols, 1, newData);
     return grayscaleImage;
 }
 
+void writePPM(Mat &image , std::string& filename){
+    std::ofstream outputFile;
+    outputFile.open(filename);
+    // Write the PPM header
+    outputFile << "P3\n"
+               << image.cols << " " << image.rows << "\n255\n";
+
+    // Write the pixel data
+    for (size_t i = 0; i < image.rows * image.cols * 3; ++i)
+    {
+        int pixelValue = image.data[i];                    // Get pixel value
+        outputFile << static_cast<int>(pixelValue) << " "; // Write pixel value as binary data
+    }
+
+    outputFile.close();
+}
