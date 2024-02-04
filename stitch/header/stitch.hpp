@@ -7,24 +7,34 @@
 class Point2f
 {
 private:
+    // x & y coordinates of the keypoint
     float x, y;
 
 public:
     Point2f(float x, float y);
 };
 
-class Keypoints
+class Keypoint
 {
-};
+private:
+    Point2f pt;
+    // size keypoint diameter
+    // angle keypoint orientation
+    // response keypoint detector response on the keypoint (that is, strength of the keypoint)
+    // octave pyramid octave in which the keypoint has been detected
+    float size;
+    float angle;
+    int octave;
+    float response;
 
-class Descriptor
-{
+public:
+    Keypoint(Point2f pt, float size, float angle = -1, int octave = 0, int response = 0);
 };
 
 class Features
 {
 private:
-    std::vector<Keypoints> keypoints;
+    std::vector<Keypoint> keypoints;
     Mat descriptor;
 
 public:
