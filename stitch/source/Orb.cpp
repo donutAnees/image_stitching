@@ -3,6 +3,30 @@
 ORB::ORB(Mat &_image, std::vector<Keypoint> &_keypoints, Mat &_descriptor)
     : image(_image), keypoints(_keypoints), descriptor(_descriptor) {}
 
+void ORB::detectKeypoints()
+{
+    int size = (image.rows * image.cols * 3);
+    for (int i = 0; i < size - 2; i += 3)
+    {
+        // identify the intensity of the pixel of interest
+        float I = image.data[i];
+        // calculate the position of the pixels using the fact that position in 1D = (cols * y + x)
+        float x = size % image.cols;
+        float y = size / image.cols;
+        std::pair<bool, unsigned char> keypointStatus = isPixelKeypoint(x, y, I);
+        if (keypointStatus.first)
+        {
+            Keypoint keypoint = Keypoint(Point2f(x, y), keypointStatus.second);
+            keypoints.push_back(keypoint);
+            // append the detected pixel to the keypoints vector
+        }
+    }
+}
+
+void ORB::detectDescriptor()
+{
+}
+
 std::pair<bool, unsigned char> ORB::isPixelKeypoint(int x, int y, float I)
 {
     // Radius of the circle around the pixel = 3
@@ -64,7 +88,8 @@ std::pair<bool, unsigned char> ORB::isPixelKeypoint(int x, int y, float I)
             {
                 count++;
             }
-            else count = 0;
+            else
+                count = 0;
         }
         if (count != 12)
             return {false, 0};
@@ -78,26 +103,7 @@ std::pair<bool, unsigned char> ORB::isPixelKeypoint(int x, int y, float I)
         return {false, 0};
 }
 
-void ORB::detectKeypoints()
+void drawKeypoints(Mat &image, std::vector<Keypoint> &keypoints)
 {
-    int size = (image.rows * image.cols * 3);
-    for (int i = 0; i < size - 2; i += 3)
-    {
-        // identify the intensity of the pixel of interest
-        float I = image.data[i];
-        // calculate the position of the pixels using the fact that position in 1D = (cols * y + x)
-        float x = size % image.cols;
-        float y = size / image.cols;
-        std::pair<bool,unsigned char> keypointStatus= isPixelKeypoint(x, y, I);
-        if (keypointStatus.first)
-        {
-            Keypoint keypoint = Keypoint(Point2f(x,y),keypointStatus.second);
-            keypoints.push_back(keypoint);
-            // append the detected pixel to the keypoints vector
-        }
-    }
-}
-
-void ORB::detectDescriptor()
-{
+    
 }
