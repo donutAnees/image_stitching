@@ -7,10 +7,15 @@ Point2f::Point2f(float x, float y)
     this->y = y;
 }
 
-Point2f::Point2f(Point2f &point)
+Point2f::Point2f(const Point2f &point)
 {
     x = point.x;
     y = point.y;
+}
+
+Keypoint::Keypoint(const Keypoint &keypoint)
+    : pt(keypoint.pt), size(keypoint.size), angle(keypoint.angle), octave(keypoint.octave), response(keypoint.response)
+{
 }
 
 Keypoint::Keypoint(Point2f &pt, float size, float angle, int octave, int response)

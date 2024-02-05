@@ -19,8 +19,9 @@ void ORB::detectKeypoints()
         std::pair<bool, unsigned char> keypointStatus = isPixelKeypoint(x, y, I);
         if (keypointStatus.first)
         {
-            //Keypoint keypoint = Keypoint(x, y, keypointStatus.second);
-            //keypoints.push_back(keypoint);
+            unsigned char response = keypointStatus.second;
+            Keypoint keypoint = Keypoint(x, y, response);
+            keypoints.push_back(keypoint);
             // append the detected pixel to the keypoints vector
         }
     }
