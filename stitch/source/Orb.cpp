@@ -1,4 +1,7 @@
 #include "../header/Orb.hpp"
+#include "../header/Feature.hpp"
+#include "../header/Mat.hpp"
+#include <fstream>
 
 ORB::ORB(Mat &_image, std::vector<Keypoint> &_keypoints, Mat &_descriptor)
     : image(_image), keypoints(_keypoints), descriptor(_descriptor) {}
@@ -16,8 +19,8 @@ void ORB::detectKeypoints()
         std::pair<bool, unsigned char> keypointStatus = isPixelKeypoint(x, y, I);
         if (keypointStatus.first)
         {
-            Keypoint keypoint = Keypoint(Point2f(x, y), keypointStatus.second);
-            keypoints.push_back(keypoint);
+            //Keypoint keypoint = Keypoint(x, y, keypointStatus.second);
+            //keypoints.push_back(keypoint);
             // append the detected pixel to the keypoints vector
         }
     }
@@ -77,9 +80,9 @@ std::pair<bool, unsigned char> ORB::isPixelKeypoint(int x, int y, float I)
         unsigned char intensityAt16 = image.data[image.cols * (y - 3) + (x - 1)];
         // if there are atleast 12 contiguous pixels that surpass the threshold, return true, else false
 
-        std::vector<unsigned char> circleIntensity({intensityAt1, intensityAt2, intensityAt3, intensityAt4,
-                                                    intensityAt5, intensityAt6, intensityAt7, intensityAt8, intensityAt9, intensityAt10, intensityAt11,
-                                                    intensityAt12, intensityAt13, intensityAt14, intensityAt15, intensityAt16});
+        std::vector<unsigned char> circleIntensity{intensityAt1, intensityAt2, intensityAt3, intensityAt4,
+                                                   intensityAt5, intensityAt6, intensityAt7, intensityAt8, intensityAt9, intensityAt10, intensityAt11,
+                                                   intensityAt12, intensityAt13, intensityAt14, intensityAt15, intensityAt16};
 
         count = 0;
         for (unsigned char &a : circleIntensity)
@@ -101,9 +104,4 @@ std::pair<bool, unsigned char> ORB::isPixelKeypoint(int x, int y, float I)
     }
     else
         return {false, 0};
-}
-
-void drawKeypoints(Mat &image, std::vector<Keypoint> &keypoints)
-{
-    
 }
