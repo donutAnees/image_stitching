@@ -8,8 +8,9 @@ class Point2f
 public:
     // x & y coordinates of the keypoint
     float x, y;
+    Point2f() : x(0), y(0){};
     Point2f(float x, float y);
-    Point2f(Point2f &point);
+    Point2f(const Point2f &point);
 };
 
 class Keypoint
@@ -24,7 +25,8 @@ public:
     float angle;
     int octave;
     float response;
-    Keypoint(Point2f &pt, float size, float angle = -1, int octave = 0, int response = 0);
+    Keypoint(const Keypoint &keypoint);
+    Keypoint(Point2f &pt, float size, float angle, int octave, int response);
     Keypoint(float x, float y, unsigned char response);
 };
 
