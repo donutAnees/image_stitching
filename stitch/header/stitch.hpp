@@ -29,7 +29,6 @@ private:
 
 public:
     Keypoint(Point2f pt, float size, float angle = -1, int octave = 0, int response = 0);
-    Keypoint(Point2f pt , int response);
 };
 
 class Features
