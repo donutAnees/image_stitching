@@ -14,7 +14,7 @@ public:
     ORB(Mat &image, std::vector<Keypoint> &keypoints, Mat &descriptor);
     // Check if the given pixel coordinates and intensity (x, y, I) is a keypoint
     // Return true if it's a keypoint, otherwise false
-    bool isPixelKeypoint(int x, int y, float I);
+    std::pair<bool, unsigned char> isPixelKeypoint(int x, int y, float I);
     // Perform keypoint detection algorithm using the image data
     // Store the detected keypoints in the 'keypoints' vector
     void detectKeypoints();

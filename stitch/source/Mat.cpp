@@ -1,4 +1,4 @@
-#include "../Header/Mat.hpp"
+#include "../header/Mat.hpp"
 
 #include <fstream>
 #include <string>
@@ -74,7 +74,7 @@ Mat convertToGray(Mat &image)
     return grayscaleImage;
 }
 
-void writePPM(Mat &image , std::string& filename){
+void writePPM(Mat &image , const std::string& filename){
     std::ofstream outputFile;
     outputFile.open(filename);
     // Write the PPM header
