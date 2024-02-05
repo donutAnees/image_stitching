@@ -1,4 +1,5 @@
 #include "../header/Orb.hpp"
+#include <cmath>
 
 ORB::ORB(Mat &_image, std::vector<Keypoint> &_keypoints, Mat &_descriptor)
     : image(_image), keypoints(_keypoints), descriptor(_descriptor) {}
@@ -14,11 +15,36 @@ void ORB::detectKeypoints()
         float x = size % image.cols;
         float y = size / image.cols;
         std::pair<bool, unsigned char> keypointStatus = isPixelKeypoint(x, y, I);
+        std::vector<Keypoint> allKeypoints;
         if (keypointStatus.first)
         {
-            Keypoint keypoint = Keypoint(Point2f(x, y), keypointStatus.second);
-            keypoints.push_back(keypoint);
             // append the detected pixel to the keypoints vector
+            Keypoint keypoint = Keypoint(Point2f(x, y), keypointStatus.second);
+            allKeypoints.push_back(keypoint);
+        }
+        // perform Non Maximum Suppression to remove redundant and adjacent keypoints
+        int radius = 3;
+        for (size_t i = 0; i < allKeypoints.size()-1; ++i)
+        {
+            for (size_t j = i+1; j < allKeypoints.size(); ++i)
+            {
+                if (std::pow((allKeypoints[i].pt.x - allKeypoints[j].pt.x),2) + std::pow((allKeypoints[i].pt.y - allKeypoints[j].pt.y),2) < std::pow(radius, 2))
+                {
+                    if (allKeypoints[i].response > allKeypoints[j].response)
+                    {
+                        keypoints.push_back(allKeypoints[i]);
+                    }
+                    else if (allKeypoints[i].response == allKeypoints[j].response)
+                    {
+                        keypoints.push_back(allKeypoints[i]);
+                        keypoints.push_back(allKeypoints[j]);
+                    }
+                    else
+                    {
+                        keypoints.push_back(allKeypoints[j]);
+                    }
+                }
+            }
         }
     }
 }
@@ -34,10 +60,12 @@ std::pair<bool, unsigned char> ORB::isPixelKeypoint(int x, int y, float I)
     // the pixels the circle touches are numbered from 1 to 16
     // to identify position of the pixel in a 1D matrix: (cols * y + x)
     // initially consider the pixels 1,5,9,13
-    unsigned char intensityAt1 = image.data[image.cols * (y - 3) + x];
-    unsigned char intensityAt5 = image.data[image.cols * y + (x + 3)];
-    unsigned char intensityAt9 = image.data[image.cols * (y + 3) + x];
-    unsigned char intensityAt13 = image.data[image.cols * y + (x - 3)];
+    x = x + 3;
+    int cols = image.cols * 3;
+    unsigned char intensityAt1 = image.data[cols * (y - 3) + x];
+    unsigned char intensityAt5 = image.data[cols * y + (x + 3)];
+    unsigned char intensityAt9 = image.data[cols * (y + 3) + x];
+    unsigned char intensityAt13 = image.data[cols * y + (x - 3)];
     // if atleast 3 of them are above or below the intensity (+/-) threshold then continue, else return false
     unsigned char count = 0;
     if (intensityAt1 > I + threshold || intensityAt1 < I - threshold)
@@ -63,23 +91,24 @@ std::pair<bool, unsigned char> ORB::isPixelKeypoint(int x, int y, float I)
     if (count >= 3)
     {
         // consider the other pixels, now that atleast 3 surpass the threshold intensity
-        unsigned char intensityAt2 = image.data[image.cols * (y - 3) + (x + 1)];
-        unsigned char intensityAt3 = image.data[image.cols * (y - 2) + (x + 2)];
-        unsigned char intensityAt4 = image.data[image.cols * (y - 1) + (x + 3)];
-        unsigned char intensityAt6 = image.data[image.cols * (y + 1) + (x + 3)];
-        unsigned char intensityAt7 = image.data[image.cols * (y + 2) + (x + 2)];
-        unsigned char intensityAt8 = image.data[image.cols * (y + 3) + (x + 1)];
-        unsigned char intensityAt10 = image.data[image.cols * (y + 3) + (x - 1)];
-        unsigned char intensityAt11 = image.data[image.cols * (y + 2) + (x - 2)];
-        unsigned char intensityAt12 = image.data[image.cols * (y + 1) + (x - 3)];
-        unsigned char intensityAt14 = image.data[image.cols * (y + 1) + (x - 3)];
-        unsigned char intensityAt15 = image.data[image.cols * (y - 2) + (x - 2)];
-        unsigned char intensityAt16 = image.data[image.cols * (y - 3) + (x - 1)];
+        unsigned char intensityAt2 = image.data[cols * (y - 3) + (x + 1)];
+        unsigned char intensityAt3 = image.data[cols * (y - 2) + (x + 2)];
+        unsigned char intensityAt4 = image.data[cols * (y - 1) + (x + 3)];
+        unsigned char intensityAt6 = image.data[cols * (y + 1) + (x + 3)];
+        unsigned char intensityAt7 = image.data[cols * (y + 2) + (x + 2)];
+        unsigned char intensityAt8 = image.data[cols * (y + 3) + (x + 1)];
+        unsigned char intensityAt10 = image.data[cols * (y + 3) + (x - 1)];
+        unsigned char intensityAt11 = image.data[cols * (y + 2) + (x - 2)];
+        unsigned char intensityAt12 = image.data[cols * (y + 1) + (x - 3)];
+        unsigned char intensityAt14 = image.data[cols * (y + 1) + (x - 3)];
+        unsigned char intensityAt15 = image.data[cols * (y - 2) + (x - 2)];
+        unsigned char intensityAt16 = image.data[cols * (y - 3) + (x - 1)];
         // if there are atleast 12 contiguous pixels that surpass the threshold, return true, else false
 
         std::vector<unsigned char> circleIntensity({intensityAt1, intensityAt2, intensityAt3, intensityAt4,
-                                                    intensityAt5, intensityAt6, intensityAt7, intensityAt8, intensityAt9, intensityAt10, intensityAt11,
-                                                    intensityAt12, intensityAt13, intensityAt14, intensityAt15, intensityAt16});
+                                                    intensityAt5, intensityAt6, intensityAt7, intensityAt8, 
+                                                    intensityAt9, intensityAt10, intensityAt11, intensityAt12, 
+                                                    intensityAt13, intensityAt14, intensityAt15, intensityAt16});
 
         count = 0;
         for (unsigned char &a : circleIntensity)
@@ -94,9 +123,10 @@ std::pair<bool, unsigned char> ORB::isPixelKeypoint(int x, int y, float I)
         if (count != 12)
             return {false, 0};
         // sum of Absolute difference between the intensity I and the 16 adjacent pixels
-        unsigned char V = abs((16 * I) - (intensityAt1 + intensityAt2 + intensityAt3 + intensityAt4 +
-                                          intensityAt5 + intensityAt6 + intensityAt7 + intensityAt8 + intensityAt9 + intensityAt10 + intensityAt11 +
-                                          intensityAt12 + intensityAt13 + intensityAt14 + intensityAt15 + intensityAt16));
+        unsigned char V = abs(I - intensityAt1) + abs(I - intensityAt2) + abs(I - intensityAt3) + abs(I - intensityAt4) +
+                          abs(I - intensityAt5) + abs(I - intensityAt6) + abs(I - intensityAt7) + abs(I - intensityAt8) + 
+                          abs(I - intensityAt9) + abs(I - intensityAt10) + abs(I - intensityAt11) + abs(I - intensityAt12) + 
+                          abs(I - intensityAt13) + abs(I - intensityAt14) + abs(I - intensityAt15) + abs(I - intensityAt16);
         return {true, V};
     }
     else
