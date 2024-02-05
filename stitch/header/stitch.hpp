@@ -11,7 +11,7 @@ class BFMatcher
 class Stitcher
 {
     public:
-    void drawKeypoints(Mat &image, std::vector<Keypoint> &keypoints);
+    friend void drawKeypoints(Mat &image, std::vector<Keypoint> &keypoints);
 };
 
 #endif
