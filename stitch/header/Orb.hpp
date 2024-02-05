@@ -2,15 +2,13 @@
 #define ORB_HPP
 
 #include "Mat.hpp"
-#include "Stitch.hpp"
+#include "Feature.hpp"
 
 class ORB
 {
-private:
+public:
     std::vector<Keypoint> &keypoints;
     Mat &image, &descriptor;
-
-public:
     ORB(Mat &image, std::vector<Keypoint> &keypoints, Mat &descriptor);
     // Check if the given pixel coordinates and intensity (x, y, I) is a keypoint
     // Return true if it's a keypoint, otherwise false

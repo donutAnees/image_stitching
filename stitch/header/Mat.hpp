@@ -2,6 +2,7 @@
 #define MAT_HPP
 
 #include <string>
+#include <vector>
 
 class Mat
 {

@@ -1,4 +1,7 @@
 #include "../header/Orb.hpp"
+#include "../header/Feature.hpp"
+#include "../header/Mat.hpp"
+#include <fstream>
 #include <cmath>
 
 ORB::ORB(Mat &_image, std::vector<Keypoint> &_keypoints, Mat &_descriptor)
@@ -131,9 +134,4 @@ std::pair<bool, unsigned char> ORB::isPixelKeypoint(int x, int y, float I)
     }
     else
         return {false, 0};
-}
-
-void drawKeypoints(Mat &image, std::vector<Keypoint> &keypoints)
-{
-    
 }
