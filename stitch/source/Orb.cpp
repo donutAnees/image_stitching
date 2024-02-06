@@ -24,7 +24,7 @@ void ORB::detectKeypoints()
             if (keypointStatus.first)
             {
                 // append the detected pixel to the keypoints vector
-                Keypoint keypoint = Keypoint(Point2f(x, y), keypointStatus.second);
+                Keypoint keypoint = Keypoint(x, y , keypointStatus.second);
                 allKeypoints.push_back(keypoint);
             }
             // perform Non Maximum Suppression to remove redundant and adjacent keypoints
