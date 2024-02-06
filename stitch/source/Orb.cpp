@@ -3,55 +3,59 @@
 #include "../header/Mat.hpp"
 #include <fstream>
 #include <cmath>
+#include <iostream>
 
 ORB::ORB(Mat &_image, std::vector<Keypoint> &_keypoints, Mat &_descriptor)
     : image(_image), keypoints(_keypoints), descriptor(_descriptor) {}
 
 void ORB::detectKeypoints()
 {
+    int count = 0;
     int size = (image.rows * image.cols * 3);
     for (int i = 0; i < size - 2; i += 3)
     {
         // identify the intensity of the pixel of interest
         float I = image.data[i];
         // calculate the position of the pixels using the fact that position in 1D = (cols * y + x)
-        float x = i % (image.cols * 3);
-        float y = i / (image.cols * 3);
-        if (3 <= x && x <= (image.cols*3 - 2) && 3 <= y && y <= (image.rows - 2))
+        float x = (i / 3) % (image.cols); //horizontal
+        float y = (i / 3) / (image.cols); //vertical
+        //if (3 <= x && x <= (image.cols * 3 - 2) && 3 <= y && y <= (image.rows - 2))
+        if (x >= 3 && x <= (image.cols - 3) && y >= 3 && y <= (image.rows - 3))
         {
             std::pair<bool, unsigned char> keypointStatus = isPixelKeypoint(x, y, I);
             std::vector<Keypoint> allKeypoints;
             if (keypointStatus.first)
             {
+                count++;
                 // append the detected pixel to the keypoints vector
-                Keypoint keypoint = Keypoint(x, y , keypointStatus.second);
-                allKeypoints.push_back(keypoint);
+                Keypoint keypoint = Keypoint(x, y, keypointStatus.second);
+                allKeypoints.emplace_back(keypoint);
             }
-            // perform Non Maximum Suppression to remove redundant and adjacent keypoints
-            int radius = 3;
-            for (size_t i = 0; i < allKeypoints.size()-1; ++i)
-            {
-                for (size_t j = i+1; j < allKeypoints.size(); ++i)
-                {
-                    if (std::pow((allKeypoints[i].pt.x - allKeypoints[j].pt.x),2) + std::pow((allKeypoints[i].pt.y - allKeypoints[j].pt.y),2) < std::pow(radius, 2))
-                    {
-                        if (allKeypoints[i].response > allKeypoints[j].response)
-                        {
-                            keypoints.push_back(allKeypoints[i]);
-                        }
-                        else if (allKeypoints[i].response == allKeypoints[j].response)
-                        {
-                            keypoints.push_back(allKeypoints[i]);
-                            keypoints.push_back(allKeypoints[j]);
-                        }
-                        else
-                        {
-                            keypoints.push_back(allKeypoints[j]);
-                        }
-                    }
-                }
-            }
-        } 
+            // //perform Non Maximum Suppression to remove redundant and adjacent keypoints
+            // int radius = 3;
+            // for (size_t i = 0; i < allKeypoints.size()-1; ++i)
+            // {
+            //     for (size_t j = i+1; j < allKeypoints.size(); ++j)
+            //     {
+            //         if (std::pow((allKeypoints[i].pt.x - allKeypoints[j].pt.x),2) + std::pow((allKeypoints[i].pt.y - allKeypoints[j].pt.y),2) < std::pow(radius, 2))
+            //         {
+            //             if (allKeypoints[i].response > allKeypoints[j].response)
+            //             {
+            //                 keypoints.emplace_back(allKeypoints[i]);
+            //             }
+            //             else if (allKeypoints[i].response == allKeypoints[j].response)
+            //             {
+            //                 keypoints.emplace_back(allKeypoints[i]);
+            //                 keypoints.emplace_back(allKeypoints[j]);
+            //             }
+            //             else
+            //             {
+            //                 keypoints.emplace_back(allKeypoints[j]);
+            //             }
+            //         }
+            //     }
+            // }
+        }
     }
 }
 

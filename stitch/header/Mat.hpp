@@ -17,6 +17,7 @@ public:
     Mat(const std::string &filepath);
     Mat(int _rows, int _cols, int _channels, unsigned char *_data);
     Mat(const Mat &image);
+    Mat();
     // convert the 3 channels into 1 channel, by using luminosity method to get the grayscale value of the pixel, grayscale = .3 * R + .59 * G + .11 * B
     friend Mat convertToGray(Mat &image);
     friend void writePPM(Mat &image, const std::string &filename);

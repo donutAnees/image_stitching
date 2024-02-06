@@ -25,6 +25,7 @@ public:
     float angle;
     int octave;
     float response;
+    Keypoint();
     Keypoint(const Keypoint &keypoint);
     Keypoint(Point2f &pt, float size, float angle, int octave, int response);
     Keypoint(float x, float y, unsigned char response);

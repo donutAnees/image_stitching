@@ -49,6 +49,8 @@ Mat::Mat(int _rows, int _cols, int _channels, unsigned char *_data)
     memcpy(data, _data, sizeof(unsigned char) * dataSize);
 }
 
+Mat::Mat() : rows(0), cols(0), channels(0), data(NULL) {}
+
 Mat::~Mat()
 {
     delete[] Mat::data;
@@ -73,7 +75,8 @@ Mat convertToGray(Mat &image)
     return grayscaleImage;
 }
 
-void writePPM(Mat &image , const std::string& filename){
+void writePPM(Mat &image, const std::string &filename)
+{
     std::ofstream outputFile;
     outputFile.open(filename);
     // Write the PPM header
@@ -83,7 +86,7 @@ void writePPM(Mat &image , const std::string& filename){
     // Write the pixel data
     for (size_t i = 0; i < image.rows * image.cols * 3; ++i)
     {
-        int pixelValue = image.data[i];                    // Get pixel value
+        int pixelValue = image.data[i];  // Get pixel value
         outputFile << pixelValue << " "; // Write pixel value as binary data
     }
 

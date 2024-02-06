@@ -1,7 +1,9 @@
 #include "../header/Stitch.hpp"
 #include <fstream>
+#include <iostream>
 
-void drawKeypoints(Mat &_image, std::vector<Keypoint> &_keypoints)
+
+void Stitcher::drawKeypoints(Mat &_image, std::vector<Keypoint> &_keypoints)
 {
     Mat keypointImage = Mat(_image);
     int rows = _image.rows;
@@ -10,10 +12,10 @@ void drawKeypoints(Mat &_image, std::vector<Keypoint> &_keypoints)
     {
         float x = _keypoint.pt.x;
         float y = _keypoint.pt.y;
-        int pos = cols * x + y;
-        keypointImage.data[pos] = 255;
-        keypointImage.data[pos + 1] = 0;
-        keypointImage.data[pos + 2] = 0;
+        int pos = cols * y + x;
+        keypointImage.data[pos * 3] = 255;
+        keypointImage.data[pos * 3 + 1] = 0;
+        keypointImage.data[pos * 3 + 2] = 0;
     }
 
     std::ofstream outputFile;

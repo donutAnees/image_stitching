@@ -1,3 +1,4 @@
 .vscode
 stitch/img/*
 stitch/source/output_gray.ppm
+stitch/source/features.ppm
