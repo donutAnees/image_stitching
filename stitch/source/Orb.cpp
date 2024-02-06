@@ -112,8 +112,8 @@ std::pair<bool, unsigned char> ORB::isPixelKeypoint(int x, int y, float I)
         // if there are atleast 12 contiguous pixels that surpass the threshold, return true, else false
 
         std::vector<unsigned char> circleIntensity({intensityAt1, intensityAt2, intensityAt3, intensityAt4,
-                                                    intensityAt5, intensityAt6, intensityAt7, intensityAt8, 
-                                                    intensityAt9, intensityAt10, intensityAt11, intensityAt12, 
+                                                    intensityAt5, intensityAt6, intensityAt7, intensityAt8,
+                                                    intensityAt9, intensityAt10, intensityAt11, intensityAt12,
                                                     intensityAt13, intensityAt14, intensityAt15, intensityAt16});
 
         count = 0;
@@ -130,8 +130,8 @@ std::pair<bool, unsigned char> ORB::isPixelKeypoint(int x, int y, float I)
             return {false, 0};
         // sum of Absolute difference between the intensity I and the 16 adjacent pixels
         unsigned char V = abs(I - intensityAt1) + abs(I - intensityAt2) + abs(I - intensityAt3) + abs(I - intensityAt4) +
-                          abs(I - intensityAt5) + abs(I - intensityAt6) + abs(I - intensityAt7) + abs(I - intensityAt8) + 
-                          abs(I - intensityAt9) + abs(I - intensityAt10) + abs(I - intensityAt11) + abs(I - intensityAt12) + 
+                          abs(I - intensityAt5) + abs(I - intensityAt6) + abs(I - intensityAt7) + abs(I - intensityAt8) +
+                          abs(I - intensityAt9) + abs(I - intensityAt10) + abs(I - intensityAt11) + abs(I - intensityAt12) +
                           abs(I - intensityAt13) + abs(I - intensityAt14) + abs(I - intensityAt15) + abs(I - intensityAt16);
         return {true, V};
     }
