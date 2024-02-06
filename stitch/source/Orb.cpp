@@ -15,40 +15,43 @@ void ORB::detectKeypoints()
         // identify the intensity of the pixel of interest
         float I = image.data[i];
         // calculate the position of the pixels using the fact that position in 1D = (cols * y + x)
-        float x = size % image.cols;
-        float y = size / image.cols;
-        std::pair<bool, unsigned char> keypointStatus = isPixelKeypoint(x, y, I);
-        std::vector<Keypoint> allKeypoints;
-        if (keypointStatus.first)
+        float x = i % (image.cols * 3);
+        float y = i / (image.cols * 3);
+        if (3 <= x && x <= (image.cols*3 - 2) && 3 <= y && y <= (image.rows - 2))
         {
-            // append the detected pixel to the keypoints vector
-            Keypoint keypoint = Keypoint(Point2f(x, y), keypointStatus.second);
-            allKeypoints.push_back(keypoint);
-        }
-        // perform Non Maximum Suppression to remove redundant and adjacent keypoints
-        int radius = 3;
-        for (size_t i = 0; i < allKeypoints.size()-1; ++i)
-        {
-            for (size_t j = i+1; j < allKeypoints.size(); ++i)
+            std::pair<bool, unsigned char> keypointStatus = isPixelKeypoint(x, y, I);
+            std::vector<Keypoint> allKeypoints;
+            if (keypointStatus.first)
             {
-                if (std::pow((allKeypoints[i].pt.x - allKeypoints[j].pt.x),2) + std::pow((allKeypoints[i].pt.y - allKeypoints[j].pt.y),2) < std::pow(radius, 2))
+                // append the detected pixel to the keypoints vector
+                Keypoint keypoint = Keypoint(Point2f(x, y), keypointStatus.second);
+                allKeypoints.push_back(keypoint);
+            }
+            // perform Non Maximum Suppression to remove redundant and adjacent keypoints
+            int radius = 3;
+            for (size_t i = 0; i < allKeypoints.size()-1; ++i)
+            {
+                for (size_t j = i+1; j < allKeypoints.size(); ++i)
                 {
-                    if (allKeypoints[i].response > allKeypoints[j].response)
+                    if (std::pow((allKeypoints[i].pt.x - allKeypoints[j].pt.x),2) + std::pow((allKeypoints[i].pt.y - allKeypoints[j].pt.y),2) < std::pow(radius, 2))
                     {
-                        keypoints.push_back(allKeypoints[i]);
-                    }
-                    else if (allKeypoints[i].response == allKeypoints[j].response)
-                    {
-                        keypoints.push_back(allKeypoints[i]);
-                        keypoints.push_back(allKeypoints[j]);
-                    }
-                    else
-                    {
-                        keypoints.push_back(allKeypoints[j]);
+                        if (allKeypoints[i].response > allKeypoints[j].response)
+                        {
+                            keypoints.push_back(allKeypoints[i]);
+                        }
+                        else if (allKeypoints[i].response == allKeypoints[j].response)
+                        {
+                            keypoints.push_back(allKeypoints[i]);
+                            keypoints.push_back(allKeypoints[j]);
+                        }
+                        else
+                        {
+                            keypoints.push_back(allKeypoints[j]);
+                        }
                     }
                 }
             }
-        }
+        } 
     }
 }
 
