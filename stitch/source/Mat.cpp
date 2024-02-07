@@ -1,6 +1,7 @@
 #include "../header/Mat.hpp"
 #include <fstream>
 #include <string>
+#include <iostream>
 
 Mat::Mat(const std::string &filepath)
 {
@@ -75,6 +76,32 @@ Mat convertToGray(Mat &image)
     return grayscaleImage;
 }
 
+Mat resize(float factor, Mat &image)
+{
+    size_t cols = image.cols;
+    size_t rows = image.rows;
+    size_t newWidth = cols * factor;
+    size_t newHeight = rows * factor;
+    size_t newSize = newWidth * newHeight * 3;
+    unsigned char *data = new unsigned char[newSize];
+    size_t count = 0;
+    for (int y = 0; y < newHeight; ++y)
+    {
+        for (int x = 0; x < newWidth; x += 3)
+        {
+            size_t originalY = y / factor;
+            size_t originalX = x / factor;
+            size_t index = (originalY * (image.cols) + originalX) * 3;
+            data[count] = image.data[index];
+            data[count+ 1] = image.data[index];
+            data[count + 2] = image.data[index];
+            count += 3;
+        }
+    }
+    Mat resized = Mat(newHeight, newWidth, 1, data);
+    return resized;
+}
+
 void writePPM(Mat &image, const std::string &filename)
 {
     std::ofstream outputFile;
@@ -87,7 +114,7 @@ void writePPM(Mat &image, const std::string &filename)
     for (size_t i = 0; i < image.rows * image.cols * 3; ++i)
     {
         int pixelValue = image.data[i];  // Get pixel value
-        outputFile << pixelValue << " "; // Write pixel value as binary data
+        outputFile <<pixelValue << " "; // Write pixel value as binary data
     }
 
     outputFile.close();

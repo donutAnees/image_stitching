@@ -16,8 +16,10 @@ int main(int argc, char *argv[])
     Stitcher stitch = Stitcher();
     Mat descriptor;
     std::vector<Keypoint> keypoints;
-    ORB orb = ORB(gray,keypoints,descriptor);
-    orb.detectKeypoints();
-    stitch.drawKeypoints(gray,orb.keypoints);
+    //ORB orb = ORB(gray,keypoints,descriptor);
+    //orb.detectKeypoints();
+    //stitch.drawKeypoints(gray,orb.keypoints);
+    Mat resized = resize(0.5,gray);
+    writePPM(resized,"resized.ppm");
     return 0;
 }

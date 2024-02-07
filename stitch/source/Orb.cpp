@@ -17,9 +17,8 @@ void ORB::detectKeypoints()
         // identify the intensity of the pixel of interest
         float I = image.data[i];
         // calculate the position of the pixels using the fact that position in 1D = (cols * y + x)
-        float x = (i / 3) % (image.cols); //horizontal
-        float y = (i / 3) / (image.cols); //vertical
-        //if (3 <= x && x <= (image.cols * 3 - 2) && 3 <= y && y <= (image.rows - 2))
+        float x = (i / 3) % (image.cols); // horizontal
+        float y = (i / 3) / (image.cols); // vertical
         if (x >= 3 && x <= (image.cols - 3) && y >= 3 && y <= (image.rows - 3))
         {
             std::pair<bool, unsigned char> keypointStatus = isPixelKeypoint(x, y, I);
@@ -29,7 +28,7 @@ void ORB::detectKeypoints()
                 count++;
                 // append the detected pixel to the keypoints vector
                 Keypoint keypoint = Keypoint(x, y, keypointStatus.second);
-                allKeypoints.emplace_back(keypoint);
+                keypoints.emplace_back(keypoint);
             }
             // //perform Non Maximum Suppression to remove redundant and adjacent keypoints
             // int radius = 3;
@@ -66,11 +65,10 @@ void ORB::detectDescriptor()
 std::pair<bool, unsigned char> ORB::isPixelKeypoint(int x, int y, float I)
 {
     // Radius of the circle around the pixel = 3
-    float threshold = 0.2 * I; // the intensity threshold to be considered an interest point
+    float threshold = 0.1 * I; // the intensity threshold to be considered an interest point
     // the pixels the circle touches are numbered from 1 to 16
     // to identify position of the pixel in a 1D matrix: (cols * y + x)
     // initially consider the pixels 1,5,9,13
-    x = x + 3;
     int cols = image.cols * 3;
     unsigned char intensityAt1 = image.data[cols * (y - 3) + x];
     unsigned char intensityAt5 = image.data[cols * y + (x + 3)];
@@ -110,7 +108,7 @@ std::pair<bool, unsigned char> ORB::isPixelKeypoint(int x, int y, float I)
         unsigned char intensityAt10 = image.data[cols * (y + 3) + (x - 1)];
         unsigned char intensityAt11 = image.data[cols * (y + 2) + (x - 2)];
         unsigned char intensityAt12 = image.data[cols * (y + 1) + (x - 3)];
-        unsigned char intensityAt14 = image.data[cols * (y + 1) + (x - 3)];
+        unsigned char intensityAt14 = image.data[cols * (y - 1) + (x - 3)];
         unsigned char intensityAt15 = image.data[cols * (y - 2) + (x - 2)];
         unsigned char intensityAt16 = image.data[cols * (y - 3) + (x - 1)];
         // if there are atleast 12 contiguous pixels that surpass the threshold, return true, else false
@@ -123,14 +121,16 @@ std::pair<bool, unsigned char> ORB::isPixelKeypoint(int x, int y, float I)
         count = 0;
         for (unsigned char &a : circleIntensity)
         {
-            if (a > I + threshold || a < I + threshold)
+            if (count == 12)
+                break;
+            if (a > I + threshold || a < I - threshold)
             {
                 count++;
             }
             else
                 count = 0;
         }
-        if (count != 12)
+        if (count < 12)
             return {false, 0};
         // sum of Absolute difference between the intensity I and the 16 adjacent pixels
         unsigned char V = abs(I - intensityAt1) + abs(I - intensityAt2) + abs(I - intensityAt3) + abs(I - intensityAt4) +
