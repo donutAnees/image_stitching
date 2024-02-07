@@ -87,11 +87,11 @@ Mat resize(float factor, Mat &image)
     size_t count = 0;
     for (int y = 0; y < newHeight; ++y)
     {
-        for (int x = 0; x < newWidth; x += 3)
+        for (int x = 0; x < (newWidth * 3); x += 3)
         {
             size_t originalY = y / factor;
             size_t originalX = x / factor;
-            size_t index = (originalY * (image.cols) + originalX) * 3;
+            size_t index = originalY * (image.cols * 3) + originalX;
             data[count] = image.data[index];
             data[count+ 1] = image.data[index];
             data[count + 2] = image.data[index];
