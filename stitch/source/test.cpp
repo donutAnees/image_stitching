@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     Mat descriptor;
     std::vector<Keypoint> keypoints;
     ORB orb = ORB(gray,keypoints,descriptor);
-    orb.detectAndCompute();
+    std::vector<std::pair<float, std::vector<Keypoint>>> allKeypoints = orb.detectAndCompute();
     //stitch.drawKeypoints(gray,orb.keypoints);
     //Mat resized = resize(0.125,gray)s;
     //writePPM(resized,"resized.ppm");

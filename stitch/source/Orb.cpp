@@ -162,10 +162,10 @@ std::pair<bool, unsigned char> ORB::isPixelKeypoint(int x, int y, float I)
         return {false, 0};
 }
 
-void computePyramid(Mat& image)
+std::vector<std::pair<float, std::vector<Keypoint>>> computePyramid(Mat &image)
 {
-    float scale[4] ={1,0.5,0.25,0.125};
-    std::vector<std::vector<Keypoint>> allKeypoints;
+    float scale[4] = {1, 0.5, 0.25, 0.125};
+    std::vector<std::pair<float, std::vector<Keypoint>>> allKeypointsWithScale;
     for (int i = 0; i <= 3; i++)
     {
         Mat resized = resize(scale[i], image);
@@ -173,12 +173,14 @@ void computePyramid(Mat& image)
         std::vector<Keypoint> keypoints;
         ORB orb = ORB(resized, keypoints, descriptor);
         orb.detectKeypoints();
+        allKeypointsWithScale.push_back({scale[i], keypoints});
         Stitcher stitch = Stitcher();
-        const std::string filename = "resized"+std::to_string(i)+".ppm";
-        stitch.drawKeypoints(resized, orb.keypoints,filename);
+        const std::string filename = "resized" + std::to_string(i) + ".ppm";
+        stitch.drawKeypoints(resized, orb.keypoints, filename);
     }
 }
 
-void ORB::detectAndCompute(){
+void ORB::detectAndCompute()
+{
     computePyramid(image);
 }
