@@ -3,7 +3,7 @@
 #include <iostream>
 
 
-void Stitcher::drawKeypoints(Mat &_image, std::vector<Keypoint> &_keypoints)
+void Stitcher::drawKeypoints(Mat &_image, std::vector<Keypoint> &_keypoints,const std::string& filename)
 {
     Mat keypointImage = Mat(_image);
     int rows = _image.rows;
@@ -19,7 +19,7 @@ void Stitcher::drawKeypoints(Mat &_image, std::vector<Keypoint> &_keypoints)
     }
 
     std::ofstream outputFile;
-    outputFile.open("features.ppm");
+    outputFile.open(filename);
     outputFile << "P3\n"
                << cols << " " << rows << "\n255\n";
 

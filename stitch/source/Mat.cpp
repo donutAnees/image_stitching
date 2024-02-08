@@ -68,9 +68,14 @@ Mat convertToGray(Mat &image)
         unsigned char r = image.data[i];
         unsigned char g = image.data[i + 1];
         unsigned char b = image.data[i + 2];
+        //int avg = (((r + g + b) / 3) > 0xff) ? 0xff : (r + g + b) / 3; 
         newData[i] = 0.3 * r + 0.59 * g + 0.11 * b;
         newData[i + 1] = 0.3 * r + 0.59 * g + 0.11 * b;
         newData[i + 2] = 0.3 * r + 0.59 * g + 0.11 * b;
+        // using avg
+        // newData[i] = avg;
+        // newData[i+1] = av20
+        // newData[i+2] = avg;
     }
     Mat grayscaleImage = Mat(rows, cols, 1, newData);
     return grayscaleImage;
@@ -80,6 +85,7 @@ Mat resize(float factor, Mat &image)
 {
     size_t cols = image.cols;
     size_t rows = image.rows;
+    //find the new height and width of the resized image by multipying the existing height and width by the factor
     size_t newWidth = cols * factor;
     size_t newHeight = rows * factor;
     size_t newSize = newWidth * newHeight * 3;
@@ -89,6 +95,7 @@ Mat resize(float factor, Mat &image)
     {
         for (int x = 0; x < (newWidth * 3); x += 3)
         {
+            //find the corresponding value of the new image
             size_t originalY = y / factor;
             size_t originalX = x / factor;
             size_t index = originalY * (image.cols * 3) + originalX;

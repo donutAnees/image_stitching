@@ -13,13 +13,13 @@ int main(int argc, char *argv[])
     Mat mat = Mat("../img/img1.ppm");
     Mat gray = convertToGray(mat);
     // Write the grayscale image to a new PPM file
-    Stitcher stitch = Stitcher();
+    //Stitcher stitch = Stitcher();
     Mat descriptor;
     std::vector<Keypoint> keypoints;
-    //ORB orb = ORB(gray,keypoints,descriptor);
-    //orb.detectKeypoints();
+    ORB orb = ORB(gray,keypoints,descriptor);
+    orb.detectAndCompute();
     //stitch.drawKeypoints(gray,orb.keypoints);
-    Mat resized = resize(0.5,gray);
-    writePPM(resized,"resized.ppm");
+    //Mat resized = resize(0.125,gray)s;
+    //writePPM(resized,"resized.ppm");
     return 0;
 }

@@ -3,6 +3,7 @@
 #include "Mat.hpp"
 #include "Feature.hpp"
 #include <vector>
+#include <string>
 
 class BFMatcher
 {
@@ -11,7 +12,7 @@ class BFMatcher
 class Stitcher
 {
     public:
-    void drawKeypoints(Mat &image, std::vector<Keypoint> &keypoints);
+    void drawKeypoints(Mat &image, std::vector<Keypoint> &keypoints,const std::string& filename);
 };
 
 #endif

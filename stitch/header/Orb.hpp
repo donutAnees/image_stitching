@@ -19,6 +19,7 @@ public:
     // Compute descriptors for the detected keypoints
     // Store the descriptors in the 'descriptor' Mat object
     void detectDescriptor();
+    void detectAndCompute();
 };
 
 #endif

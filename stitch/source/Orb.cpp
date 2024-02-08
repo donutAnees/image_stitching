@@ -1,7 +1,9 @@
 #include "../header/Orb.hpp"
 #include "../header/Feature.hpp"
 #include "../header/Mat.hpp"
+#include "../header/Stitch.hpp"
 #include <fstream>
+#include <string>
 #include <cmath>
 #include <iostream>
 
@@ -10,7 +12,6 @@ ORB::ORB(Mat &_image, std::vector<Keypoint> &_keypoints, Mat &_descriptor)
 
 void ORB::detectKeypoints()
 {
-    int count = 0;
     int size = (image.rows * image.cols * 3);
     for (int i = 0; i < size - 2; i += 3)
     {
@@ -19,13 +20,12 @@ void ORB::detectKeypoints()
         // calculate the position of the pixels using the fact that position in 1D = (cols * y + x)
         float x = (i / 3) % (image.cols); // horizontal
         float y = (i / 3) / (image.cols); // vertical
-        if (x >= 3 && x <= (image.cols - 3) && y >= 3 && y <= (image.rows - 3))
+        if (x >= 3 && x < (image.cols - 3) && y >= 3 && y < (image.rows - 3))
         {
             std::pair<bool, unsigned char> keypointStatus = isPixelKeypoint(x, y, I);
             std::vector<Keypoint> allKeypoints;
             if (keypointStatus.first)
             {
-                count++;
                 // append the detected pixel to the keypoints vector
                 Keypoint keypoint = Keypoint(x, y, keypointStatus.second);
                 keypoints.emplace_back(keypoint);
@@ -65,7 +65,7 @@ void ORB::detectDescriptor()
 std::pair<bool, unsigned char> ORB::isPixelKeypoint(int x, int y, float I)
 {
     // Radius of the circle around the pixel = 3
-    float threshold = 0.1 * I; // the intensity threshold to be considered an interest point
+    float threshold = 0.20 * I; // the intensity threshold to be considered an interest point
     // the pixels the circle touches are numbered from 1 to 16
     // to identify position of the pixel in a 1D matrix: (cols * y + x)
     // initially consider the pixels 1,5,9,13
@@ -118,27 +118,67 @@ std::pair<bool, unsigned char> ORB::isPixelKeypoint(int x, int y, float I)
                                                     intensityAt9, intensityAt10, intensityAt11, intensityAt12,
                                                     intensityAt13, intensityAt14, intensityAt15, intensityAt16});
 
-        count = 0;
-        for (unsigned char &a : circleIntensity)
+        for (int x = 0; x < 16; x++)
         {
-            if (count == 12)
-                break;
-            if (a > I + threshold || a < I - threshold)
+            bool darker = true;
+            bool brighter = true;
+
+            for (int y = 0; y < 9; y++)
             {
-                count++;
+                int circlePixel = circleIntensity[(x + y) % 16];
+
+                if (!(circlePixel > I + threshold))
+                {
+                    brighter = false;
+                    if (!darker)
+                    {
+                        break;
+                    }
+                }
+
+                if (!(circlePixel < I - threshold))
+                {
+                    darker = false;
+                    if (!brighter)
+                    {
+                        break;
+                    }
+                }
             }
-            else
-                count = 0;
+
+            if (brighter || darker)
+            {
+                // sum of Absolute difference between the intensity I and the 16 adjacent pixels
+                unsigned char V = abs(I - intensityAt1) + abs(I - intensityAt2) + abs(I - intensityAt3) + abs(I - intensityAt4) +
+                                  abs(I - intensityAt5) + abs(I - intensityAt6) + abs(I - intensityAt7) + abs(I - intensityAt8) +
+                                  abs(I - intensityAt9) + abs(I - intensityAt10) + abs(I - intensityAt11) + abs(I - intensityAt12) +
+                                  abs(I - intensityAt13) + abs(I - intensityAt14) + abs(I - intensityAt15) + abs(I - intensityAt16);
+                return {true, V};
+            }
         }
-        if (count < 12)
-            return {false, 0};
-        // sum of Absolute difference between the intensity I and the 16 adjacent pixels
-        unsigned char V = abs(I - intensityAt1) + abs(I - intensityAt2) + abs(I - intensityAt3) + abs(I - intensityAt4) +
-                          abs(I - intensityAt5) + abs(I - intensityAt6) + abs(I - intensityAt7) + abs(I - intensityAt8) +
-                          abs(I - intensityAt9) + abs(I - intensityAt10) + abs(I - intensityAt11) + abs(I - intensityAt12) +
-                          abs(I - intensityAt13) + abs(I - intensityAt14) + abs(I - intensityAt15) + abs(I - intensityAt16);
-        return {true, V};
+        return {false, 0};
     }
     else
         return {false, 0};
+}
+
+void computePyramid(Mat& image)
+{
+    float scale[4] ={1,0.5,0.25,0.125};
+    std::vector<std::vector<Keypoint>> allKeypoints;
+    for (int i = 0; i <= 3; i++)
+    {
+        Mat resized = resize(scale[i], image);
+        Mat descriptor;
+        std::vector<Keypoint> keypoints;
+        ORB orb = ORB(resized, keypoints, descriptor);
+        orb.detectKeypoints();
+        Stitcher stitch = Stitcher();
+        const std::string filename = "resized"+std::to_string(i)+".ppm";
+        stitch.drawKeypoints(resized, orb.keypoints,filename);
+    }
+}
+
+void ORB::detectAndCompute(){
+    computePyramid(image);
 }
