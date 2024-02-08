@@ -19,7 +19,7 @@ public:
     // Compute descriptors for the detected keypoints
     // Store the descriptors in the 'descriptor' Mat object
     void detectDescriptor();
-    std::vector<std::pair<float, std::vector<Keypoint>>> detectAndCompute();
+    void detectAndCompute();
 };
 
 #endif
