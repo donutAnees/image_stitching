@@ -47,7 +47,6 @@ int main(int argc, char **argv)
     drawMatches(imRef1, keypoints1, imRef2, keypoints2, goodmatches, imMatches);
 
     std::vector<Point2f> points1, points2;
-
     for (size_t i = 0; i < goodmatches.size(); i++)
     {
         {
