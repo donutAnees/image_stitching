@@ -3,3 +3,7 @@ stitch/img/*
 stitch/source/output_gray.ppm
 stitch/source/*.ppm
 build
+opencv/CMakeCache.txt
+opencv/CMakeLists.txt
+opencv/cmake_install.cmake
+opencv/CMakeFiles
