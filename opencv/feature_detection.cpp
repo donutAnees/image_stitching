@@ -55,7 +55,7 @@ int main(int argc, char **argv)
         }
     }
 
-    Mat H = findHomography(points2, points1, RANSAC, 6);
+    Mat H = findHomography(points2, points1, RANSAC, 4);
 
     imshow("result", imMatches);
     waitKey(0);
