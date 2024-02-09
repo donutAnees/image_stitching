@@ -1,4 +1,5 @@
 #include "stitch.hpp"
+#include <string>
 
 void stitch::processImage()
 {
@@ -31,4 +32,9 @@ void stitch::processImage()
         {
         }
     }
+}
+void stitch::addImage(const std::string &filename)
+{
+    cv::Mat image = cv::imread(filename);
+    images.emplace_back(image);
 }
