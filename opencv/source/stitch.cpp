@@ -1,5 +1,9 @@
-#include "stitch.hpp"
+#include "../header/stitch.hpp"
 #include <string>
+#include <opencv2/core/mat.hpp>
+#include <opencv2/features2d.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <vector>
 
 void stitch::processImage()
 {
@@ -26,6 +30,9 @@ void stitch::processImage()
                     goodmatches.emplace_back(matches[i][0]);
                 }
             }
+            cv::Mat imMatches;
+            cv::drawMatches(images[middle], keypoints1, images[middle+1], keypoints2, goodmatches, imMatches);
+    
 
         }
         else

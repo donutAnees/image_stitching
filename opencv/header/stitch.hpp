@@ -1,6 +1,5 @@
-#include <opencv2/core/mat.hpp>
-#include <opencv2/features2d.hpp>
-#include <vector>
+#ifndef STITCH_HPP
+#define STICH_HPP
 
 class stitch
 {
@@ -11,5 +10,7 @@ public:
     std::vector<cv::KeyPoint> &currentImageKeypoints;
     cv::Mat &currentImageDescriptor;
     void processImage();
-    void addImage();
+    void addImage(const std::string &filename);
 };
+
+#endif
