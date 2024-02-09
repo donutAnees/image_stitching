@@ -3,6 +3,7 @@
 #include <opencv2/core/mat.hpp>
 #include <opencv2/features2d.hpp>
 #include <opencv2/imgcodecs.hpp>
+#include <opencv2/highgui.hpp>
 #include <vector>
 
 void stitch::processImage()
@@ -33,7 +34,7 @@ void stitch::processImage()
             cv::Mat imMatches;
             cv::drawMatches(images[middle], keypoints1, images[middle+1], keypoints2, goodmatches, imMatches);
     
-
+            cv::imshow("result", imMatches);
         }
         else
         {
