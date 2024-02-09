@@ -1,4 +1,4 @@
-#include "../header/stitch.hpp"
+#include "../header/stitcher.hpp"
 #include <string>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/features2d.hpp>
@@ -6,7 +6,7 @@
 #include <opencv2/highgui.hpp>
 #include <vector>
 
-void stitch::processImage()
+void Stitcher::processImage()
 {
     {
         uint8_t imageCount = images.size();
@@ -41,7 +41,7 @@ void stitch::processImage()
         }
     }
 }
-void stitch::addImage(const std::string &filename)
+void Stitcher::addImage(const std::string &filename)
 {
     cv::Mat image = cv::imread(filename);
     images.emplace_back(image);

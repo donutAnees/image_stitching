@@ -1,7 +1,7 @@
-#ifndef STITCH_HPP
-#define STICH_HPP
+#ifndef STITCHER_HPP
+#define STICHER_HPP
 
-class stitch
+class Stitcher
 {
 public:
     std::vector<cv::Mat> &images;
@@ -9,6 +9,7 @@ public:
     cv::Mat &currentStitchedImage;
     std::vector<cv::KeyPoint> &currentImageKeypoints;
     cv::Mat &currentImageDescriptor;
+    Stitcher();
     void processImage();
     void addImage(const std::string &filename);
 };
