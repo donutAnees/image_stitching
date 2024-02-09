@@ -1,3 +1,0 @@
-/Users/anees/Documents/image_stitching/opencv/CMakeFiles/Features.dir
-/Users/anees/Documents/image_stitching/opencv/CMakeFiles/edit_cache.dir
-/Users/anees/Documents/image_stitching/opencv/CMakeFiles/rebuild_cache.dir

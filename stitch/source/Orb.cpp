@@ -6,6 +6,7 @@
 #include <string>
 #include <cmath>
 #include <iostream>
+#include <map>
 
 ORB::ORB(Mat &_image, std::vector<Keypoint> &_keypoints, Mat &_descriptor)
     : image(_image), keypoints(_keypoints), descriptor(_descriptor) {}
@@ -178,9 +179,27 @@ std::vector<std::pair<float, std::vector<Keypoint>>> computePyramid(Mat &image)
         const std::string filename = "resized" + std::to_string(i) + ".ppm";
         stitch.drawKeypoints(resized, orb.keypoints, filename);
     }
+    return allKeypointsWithScale;
 }
 
-void ORB::detectAndCompute()
+std::vector<std::pair<int,int>> ORB::detectAndCompute()
 {
-    computePyramid(image);
+    std::vector<std::pair<float, std::vector<Keypoint>>> allKeypoints = computePyramid(image);
+    std::vector<std::pair<int,int>> commonKeypoints;
+    std::map<std::pair<int,int>,int> recurringKeypoints;
+    for( auto& keypoints : allKeypoints){
+        float scale = keypoints.first;
+        for(auto& keypoint : keypoints.second){
+            int x = keypoint.pt.x / scale;
+            int y = keypoint.pt.y / scale;
+            std::pair<int,int> coordinate = std::make_pair(x,y);
+            recurringKeypoints[coordinate]++;
+        }
+    }
+    for(auto& keypoint : recurringKeypoints){
+        if(keypoint.second == 4){
+            commonKeypoints.push_back(keypoint.first);
+        }
+    }
+    return commonKeypoints;
 }
