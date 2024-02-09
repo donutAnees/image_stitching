@@ -1,3 +1,0 @@
-D:/Radhika/Projects/ImageStitching/image_stitching/build/CMakeFiles/Features.dir
-D:/Radhika/Projects/ImageStitching/image_stitching/build/CMakeFiles/ALL_BUILD.dir
-D:/Radhika/Projects/ImageStitching/image_stitching/build/CMakeFiles/ZERO_CHECK.dir
