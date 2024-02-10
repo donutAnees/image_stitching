@@ -29,12 +29,15 @@ void Stitcher::processImage()
     {
         setCurrentImage(images[middle]);
     }
+    
+    while(previousIndexToMerge > 0){
+        mergeLeftMidRightImages(images[previousIndexToMerge],images[nextIndexToMerge]);
+        previousIndexToMerge--;
+        nextIndexToMerge++;
+    }
 
-    // while(previousIndexToMerge > 0){
-    //     mergeLeftMidRightImages(images[previousIndexToMerge],images[nextIndexToMerge]);
-    //     previousIndexToMerge--;
-    //     nextIndexToMerge++;
-    // }
+    cv::imwrite("result",currentStitchedImage);
+    
 }
 void Stitcher::addImage(const std::string &filename)
 {
@@ -49,31 +52,9 @@ void Stitcher::mergeMiddleImages(cv::Mat &result, std::vector<cv::Point2f> &poin
     cv::Mat half(result, cv::Rect(0, 0, images[middle].cols, images[middle].rows));
     images[middle].copyTo(half);
     currentStitchedImage = result;
-    cv::imwrite("result.jpg", result);
 }
 
-void Stitcher::mergeMidRightImages(std::vector<cv::Point2f>& points1 ,std::vector<cv::Point2f>& points2, cv::Mat &rightImage)
-{
-    cv::Mat result;
-    cv::Mat H = cv::findHomography(points2, points1, cv::RANSAC, 8, cv::noArray(), 10000, 0.999);
-    cv::warpPerspective(rightImage, result, H, cv::Size(currentStitchedImage.cols + rightImage.cols, std::max(currentStitchedImage.rows, rightImage.rows)));
-    cv::Mat half(result, cv::Rect(0, 0, currentStitchedImage.cols, currentStitchedImage.rows));
-    currentStitchedImage.copyTo(half);
-    setCurrentImage(result);
-}
-
-void Stitcher::mergeLeftMidImages(std::vector<cv::Point2f>& points1 ,std::vector<cv::Point2f>& points2, cv::Mat &leftImage)
-{
-    cv::Mat result;
-    cv::Mat H = cv::findHomography(points1, points2, cv::RANSAC, 8, cv::noArray(), 10000, 0.999);
-    cv::warpPerspective(leftImage, result, H, cv::Size(leftImage.cols + currentStitchedImage.cols, std::max(leftImage.rows, currentStitchedImage.rows)));
-    cv::Mat half(result, cv::Rect(leftImage.cols, 0, leftImage.cols + currentStitchedImage.cols, currentStitchedImage.rows));
-    currentStitchedImage.copyTo(half);
-    setCurrentImage(result);
-}
-
-void Stitcher::setCurrentImage(cv::Mat &image)
-{
+void Stitcher::setCurrentImage(cv::Mat& image){
     currentStitchedImage = image;
     orb->detectAndCompute(currentStitchedImage, cv::noArray(), currentImageKeypoints, currentImageDescriptor);
 }
@@ -90,9 +71,12 @@ void Stitcher::mergeLeftMidRightImages(cv::Mat &leftImage, cv::Mat &rightImage)
 {
     cv::Mat lDescriptors, rDescriptors2;
     std::vector<cv::KeyPoint> lKeypoints1, rKeypoints2;
-    orb->detectAndCompute(leftImage, cv::noArray(), lKeypoints1, lDescriptors);
-    orb->detectAndCompute(rightImage, cv::noArray(), rKeypoints2, rDescriptors2);
-}
+    orb->detectAndCompute(leftImage,cv::noArray(),lKeypoints1,lDescriptors);
+    orb->detectAndCompute(rightImage,cv::noArray(),rKeypoints2,rDescriptors2);
+    std::vector<cv::Point2f> lpoints,rpoints,lmpoints,rmpoints;
+    getMatchingPoint(lpoints,lmpoints,lDescriptors,currentImageDescriptor,lKeypoints1,currentImageKeypoints);
+    getMatchingPoint(rpoints,rmpoints,rDescriptors2,currentImageDescriptor,lKeypoints1,currentImageKeypoints);
+ }
 
 void Stitcher::getMatchingPoint(std::vector<cv::Point2f> &points1, std::vector<cv::Point2f> &points2, cv::Mat &descriptors1, cv::Mat &descriptors2, std::vector<cv::KeyPoint> &keypoints1, std::vector<cv::KeyPoint> &keypoints2)
 {
