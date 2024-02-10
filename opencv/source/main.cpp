@@ -13,7 +13,8 @@ int main(int argc, char *argv[]){
     cv::Mat currentStitchedImages;
     std::vector<cv::KeyPoint> currentImageKeypoints;
     cv::Mat currentImageDescriptor;
-    Stitcher stitcher = Stitcher(images,grayscaledImages,currentStitchedImages,currentImageKeypoints,currentImageDescriptor);
+    cv::Ptr<cv::Feature2D> orb = cv::ORB::create(10000);
+    Stitcher stitcher = Stitcher(images,grayscaledImages,currentStitchedImages,currentImageKeypoints,currentImageDescriptor,orb);
 
     for (int i = 0; i < count; i++){
         string temp;

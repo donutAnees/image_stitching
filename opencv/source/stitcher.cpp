@@ -1,10 +1,10 @@
 #include "../header/stitcher.hpp"
 
-Stitcher::Stitcher(std::vector<cv::Mat>& images, std::vector<cv::Mat> &grayscaledImages, cv::Mat &currentStitchedImage,  std::vector<cv::KeyPoint> &currentImageKeypoints, cv::Mat &currentImageDescriptor)
+Stitcher::Stitcher(std::vector<cv::Mat>& images, std::vector<cv::Mat> &grayscaledImages, cv::Mat &currentStitchedImage,  std::vector<cv::KeyPoint> &currentImageKeypoints, cv::Mat &currentImageDescriptor,cv::Ptr<cv::Feature2D>& orb)
         : images(images), grayscaledImages(grayscaledImages),
           currentStitchedImage(currentStitchedImage),
           currentImageKeypoints(currentImageKeypoints),
-          currentImageDescriptor(currentImageDescriptor) {}  
+          currentImageDescriptor(currentImageDescriptor) , orb(orb){}  
           
 void Stitcher::processImage()
 {
@@ -12,15 +12,11 @@ void Stitcher::processImage()
     uint8_t middle = imageCount / 2 - 1;
     uint8_t previousIndexToMerge = middle - 1;
     uint8_t nextIndexToMerge = middle + 1;
-    cv::Ptr<cv::Feature2D> orb = cv::ORB::create(10000);
-
     if (imageCount % 2 == 0){
         cv::Mat descriptors1, descriptors2;
         std::vector<cv::KeyPoint> keypoints1, keypoints2;
-        std::vector<bool> states1;
-        std::vector<bool> states2;
-        orb->detectAndCompute(images[middle], states1, keypoints1, descriptors1);
-        orb->detectAndCompute(images[middle + 1], states2, keypoints2, descriptors2);
+        orb->detectAndCompute(images[middle], cv::noArray(), keypoints1, descriptors1);
+        orb->detectAndCompute(images[middle + 1], cv::noArray(), keypoints2, descriptors2);
         std::vector<std::vector<cv::DMatch>> matches;
         cv::BFMatcher matcher = cv::BFMatcher(cv::NORM_HAMMING2); // Hamming is good for binary string based algorithms , cross checker can be true if ratio is not used
         matcher.knnMatch(descriptors1, descriptors2, matches, 2);
@@ -50,11 +46,11 @@ void Stitcher::processImage()
         setCurrentImage(images[middle]);
     }
     
-    while(previousIndexToMerge > 0){
-        mergeLeftMidRightImages(images[previousIndexToMerge],currentStitchedImage,images[nextIndexToMerge]);
-        previousIndexToMerge--;
-        nextIndexToMerge++;
-    }
+    // while(previousIndexToMerge > 0){
+    //     mergeLeftMidRightImages(images[previousIndexToMerge],images[nextIndexToMerge]);
+    //     previousIndexToMerge--;
+    //     nextIndexToMerge++;
+    // }
     
 }
 void Stitcher::addImage(const std::string &filename)
@@ -74,6 +70,7 @@ void Stitcher::mergeMiddleImages(cv::Mat& result,std::vector<cv::Point2f>& point
 
 void Stitcher::setCurrentImage(cv::Mat& image){
     currentStitchedImage = image;
+    orb->detectAndCompute(currentStitchedImage,cv::noArray(),currentImageKeypoints,currentImageDescriptor);
 }
 
 void Stitcher::showMatches(std::vector<cv::KeyPoint> keypoints1, std::vector<cv::KeyPoint> keypoints2,std::vector<cv::DMatch> goodmatches, int middle){
@@ -83,6 +80,6 @@ void Stitcher::showMatches(std::vector<cv::KeyPoint> keypoints1, std::vector<cv:
         cv::waitKey(0);
 }
 
- void mergeLeftMidRightImages(cv::Mat& leftImage , cv::Mat& middleImage, cv::Mat& rightImage){
+ void Stitcher::mergeLeftMidRightImages(cv::Mat& leftImage , cv::Mat& rightImage){
     
  }

@@ -19,13 +19,14 @@ public:
     cv::Mat &currentStitchedImage;
     std::vector<cv::KeyPoint> &currentImageKeypoints;
     cv::Mat &currentImageDescriptor;
-    Stitcher(std::vector<cv::Mat>& images, std::vector<cv::Mat> &grayscaledImages, cv::Mat &currentStitchedImage,  std::vector<cv::KeyPoint> &currentImageKeypoints, cv::Mat &currentImageDescriptor);
+    cv::Ptr<cv::Feature2D>& orb;
+    Stitcher(std::vector<cv::Mat>& images, std::vector<cv::Mat> &grayscaledImages, cv::Mat &currentStitchedImage,  std::vector<cv::KeyPoint> &currentImageKeypoints, cv::Mat &currentImageDescriptor,cv::Ptr<cv::Feature2D>& orb);
     void processImage();
     void addImage(const std::string &filename);
     void mergeMiddleImages(cv::Mat& result,std::vector<cv::Point2f>& points1 ,std::vector<cv::Point2f>& points2, uint8_t middle);
     void setCurrentImage(cv::Mat& image);
     void showMatches(std::vector<cv::KeyPoint> keypoints1, std::vector<cv::KeyPoint> keypoints2,std::vector<cv::DMatch> goodmatches, int middle);
-    void mergeLeftMidRightImages(cv::Mat& leftImage , cv::Mat& middleImage, cv::Mat& rightImage);
+    void mergeLeftMidRightImages(cv::Mat& leftImage , cv::Mat& rightImage);
 };
 
 #endif
