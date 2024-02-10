@@ -28,11 +28,13 @@ void Stitcher::processImage()
         setCurrentImage(images[middle]);
     }
     
-    // while(previousIndexToMerge > 0){
-    //     mergeLeftMidRightImages(images[previousIndexToMerge],images[nextIndexToMerge]);
-    //     previousIndexToMerge--;
-    //     nextIndexToMerge++;
-    // }
+    while(previousIndexToMerge > 0){
+        mergeLeftMidRightImages(images[previousIndexToMerge],images[nextIndexToMerge]);
+        previousIndexToMerge--;
+        nextIndexToMerge++;
+    }
+
+    cv::imwrite("result",currentStitchedImage);
     
 }
 void Stitcher::addImage(const std::string &filename)
@@ -47,7 +49,6 @@ void Stitcher::mergeMiddleImages(cv::Mat& result,std::vector<cv::Point2f>& point
     cv::Mat half(result, cv::Rect(0, 0, images[middle].cols, images[middle].rows));
     images[middle].copyTo(half);
     currentStitchedImage = result;
-    cv::imwrite("result.jpg",result);
 }
 
 void Stitcher::setCurrentImage(cv::Mat& image){
@@ -67,6 +68,9 @@ void Stitcher::showMatches(std::vector<cv::KeyPoint>& keypoints1, std::vector<cv
     std::vector<cv::KeyPoint> lKeypoints1, rKeypoints2;
     orb->detectAndCompute(leftImage,cv::noArray(),lKeypoints1,lDescriptors);
     orb->detectAndCompute(rightImage,cv::noArray(),rKeypoints2,rDescriptors2);
+    std::vector<cv::Point2f> lpoints,rpoints,lmpoints,rmpoints;
+    getMatchingPoint(lpoints,lmpoints,lDescriptors,currentImageDescriptor,lKeypoints1,currentImageKeypoints);
+    getMatchingPoint(rpoints,rmpoints,rDescriptors2,currentImageDescriptor,lKeypoints1,currentImageKeypoints);
  }
 
 void Stitcher::getMatchingPoint(std::vector<cv::Point2f>& points1, std::vector<cv::Point2f>& points2,cv::Mat& descriptors1,cv::Mat& descriptors2, std::vector<cv::KeyPoint>& keypoints1, std::vector<cv::KeyPoint>& keypoints2){
