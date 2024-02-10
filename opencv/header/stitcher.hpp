@@ -24,9 +24,12 @@ public:
     void processImage();
     void addImage(const std::string &filename);
     void mergeMiddleImages(cv::Mat& result,std::vector<cv::Point2f>& points1 ,std::vector<cv::Point2f>& points2, uint8_t middle);
+    void mergeMidRightImages(std::vector<cv::Point2f>& points1 ,std::vector<cv::Point2f>& points2, uint8_t leftIndex);
+    void mergeLeftMidImages(std::vector<cv::Point2f>& points1 ,std::vector<cv::Point2f>& points2, uint8_t rightIndex);
     void setCurrentImage(cv::Mat& image);
-    void showMatches(std::vector<cv::KeyPoint> keypoints1, std::vector<cv::KeyPoint> keypoints2,std::vector<cv::DMatch> goodmatches, int middle);
+    void showMatches(std::vector<cv::KeyPoint>& keypoints1, std::vector<cv::KeyPoint>& keypoints2,std::vector<cv::DMatch>& goodmatches, int middle);
     void mergeLeftMidRightImages(cv::Mat& leftImage , cv::Mat& rightImage);
+    void getMatchingPoint(std::vector<cv::Point2f>& points1, std::vector<cv::Point2f>& points2,cv::Mat& descriptors1,cv::Mat& descriptors2, std::vector<cv::KeyPoint>& keypoints1, std::vector<cv::KeyPoint>& keypoints2);
 };
 
 #endif
