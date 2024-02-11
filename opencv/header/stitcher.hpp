@@ -75,9 +75,14 @@ public:
 
     // Find the bounding rectangle after warp perspective transformation
     cv::Rect findWrapRect(cv::Size sz, cv::Mat &H);
-    friend cv::Mat cropToNonBlackRegion(const cv::Mat &img);
-    friend cv::Rect findNonBlackRegion(const cv::Mat &img);
-    friend cv::Rect findLargestContourRect(const cv::Mat &img);
+
+    // friend cv::Mat cropToNonBlackRegion(const cv::Mat& img);
+    // friend cv::Rect findNonBlackRegion(const cv::Mat& img);
+    // friend cv::Rect findLargestContourRect(const cv::Mat &img);
+    friend bool checkInteriorExterior(const cv::Mat &mask, const cv::Rect &croppingMask, int &top, int &bottom, int &left, int &right);
+    friend bool compareX(cv::Point a, cv::Point b);
+    friend bool compareY(cv::Point a, cv::Point b);
+    friend cv::Mat crop(cv::Mat &source);
 };
 
 #endif
