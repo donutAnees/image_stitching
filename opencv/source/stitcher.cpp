@@ -6,25 +6,42 @@ Stitcher::Stitcher(std::vector<cv::Mat> &images, std::vector<cv::Mat> &grayscale
       imagesKeypoints(imagesKeypoints),
       imagesDescriptors(imagesDescriptors), orb(orb), currentImageDescriptor(currentImageDescriptor), currentImageKeypoints(currentImageKeypoints) {}
 
+cv::Rect findLargestContourRect(const cv::Mat &img)
+{
+    std::vector<std::vector<cv::Point>> contours;
+    cv::findContours(img, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+    auto largest_contour = std::max_element(contours.begin(), contours.end(), [](const std::vector<cv::Point> &a, const std::vector<cv::Point> &b)
+                                            { return cv::contourArea(a) < cv::contourArea(b); });
+    cv::Rect maxRect = cv::boundingRect(*largest_contour);
+    return maxRect;
+}
+
 cv::Rect findNonBlackRegion(const cv::Mat &img)
 {
     cv::Mat gray, binary;
-    std::vector<std::vector<cv::Point>> contours;
     cv::cvtColor(img, gray, cv::COLOR_BGR2GRAY);
     cv::threshold(gray, binary, 0, 255, cv::THRESH_BINARY);
-    cv::findContours(binary, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
-    auto largest_contour = std::max_element(contours.begin(), contours.end(), [](const std::vector<cv::Point> &a, const std::vector<cv::Point> &b) {
-        return cv::contourArea(a) < cv::contourArea(b);
-    });
-    cv::Rect boundary = cv::boundingRect(*largest_contour);
-    return boundary;
+    cv::Mat mask = cv::Mat::zeros(binary.size(), CV_8UC1);
+    cv::Rect roi = findLargestContourRect(binary);
+    cv::rectangle(mask, roi, 255);
+    // create 2 copies of mask to have our actual minRectangle region and to count how many pixels to subtract
+    cv::Mat minRect = mask.clone();
+    cv::Mat sub = mask.clone();
+    cv::Mat kernel = cv::Mat::ones(1, 1, CV_8U);
+    while (cv::countNonZero(sub) > 0)
+    {
+        cv::erode(minRect, minRect, kernel);
+        cv::subtract(minRect, binary, sub);
+    }
+    roi = findLargestContourRect(minRect);
+    return roi;
 }
 
 cv::Mat cropToNonBlackRegion(const cv::Mat &img)
 {
     cv::Mat croppedimg;
     cv::Rect boundary = findNonBlackRegion(img);
-    croppedimg = img(boundary).clone();
+    croppedimg = img(boundary);
     return croppedimg;
 }
 
@@ -61,12 +78,13 @@ void Stitcher::processImage()
     cv::imwrite("result.jpg", croppedimg);
 }
 
-void Stitcher::addImage(const std::string &filename , bool flag)
+void Stitcher::addImage(const std::string &filename, bool flag)
 {
     cv::Mat image = cv::imread(filename);
-    if(flag){
-    cv::Size newSize(image.cols / 4, image.rows / 4); 
-    cv::resize(image, image, newSize);
+    if (flag)
+    {
+        cv::Size newSize(image.cols / 4, image.rows / 4);
+        cv::resize(image, image, newSize);
     }
     cv::Mat gray;
     cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
@@ -83,7 +101,7 @@ void Stitcher::setCurrentImage(cv::Mat &image)
 {
     currentStitchedImage = image;
     cv::Mat gray;
-    cv::cvtColor(image,gray,cv::COLOR_BGR2GRAY);
+    cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
     orb->detectAndCompute(gray, cv::noArray(), currentImageKeypoints, currentImageDescriptor);
 }
 

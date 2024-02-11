@@ -36,6 +36,7 @@ public:
     cv::Rect findWrapRect(cv::Size sz , cv::Mat& H);
     friend cv::Mat cropToNonBlackRegion(const cv::Mat& img);
     friend cv::Rect findNonBlackRegion(const cv::Mat& img);
+    friend cv::Rect findLargestContourRect(const cv::Mat &img);
 };
 
 #endif
