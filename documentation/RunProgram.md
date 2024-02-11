@@ -5,7 +5,7 @@
 
 ## Generate the necessary files
 From the **/IMAGE_STITCHING** directory, run the following commands
-`cd opencv`
+`cd opencv` and 
 `cmake .`
 This will search for the CMakeLists.txt file in the opencv folder and follows the specification mentioned there to generate the project files 
 
