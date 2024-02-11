@@ -38,7 +38,8 @@ This is the main class of this project, which has the following attributes and f
 1. **processImage()**
    - This function processes the images by stitching them together into a panorama.
      - It calculates the number of images and determines the middle index.
-     - It merges the images iteratively based on their positions in the sequence.
+     - If the number of images are odd then it will not merge the middle pics, else it will merge the middle pics, this is to make sure that the number of pics at both side from the middle is same.
+     - It merges the images from the middle iteratively with images from left and right, this is done until there are no images on both side.
      - Finally, it crops the stitched image to remove any black regions and writes the result to a file.
    
 2. **addImage(const std::string &filename, bool flag)**

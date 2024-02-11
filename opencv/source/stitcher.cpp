@@ -1,16 +1,14 @@
 #include "../header/stitcher.hpp"
 
-Stitcher::Stitcher(std::vector<cv::Mat> &images, std::vector<cv::Mat> &grayscaledImages, cv::Mat &currentStitchedImage, std::vector<cv::Mat> &imagesDescriptors, std::vector<std::vector<cv::KeyPoint>> &imagesKeypoints, cv::Mat &currentImageDescriptor, cv::Ptr<cv::Feature2D> &orb, std::vector<cv::KeyPoint> &currentImageKeypoints)
+Stitcher::Stitcher(std::vector<cv::Mat> &images, std::vector<cv::Mat> &grayscaledImages, cv::Mat &currentStitchedImage, std::vector<cv::Mat> &imagesDescriptors, std::vector<std::vector<cv::KeyPoint>> &imagesKeypoints, cv::Mat &currentImageDescriptor, cv::Ptr<cv::Feature2D> &orb, std::vector<cv::KeyPoint> &currentImageKeypoints,cv::Mat& currentImageGrayscale)
     : images(images), grayscaledImages(grayscaledImages),
       currentStitchedImage(currentStitchedImage),
       imagesKeypoints(imagesKeypoints),
-      imagesDescriptors(imagesDescriptors), orb(orb), currentImageDescriptor(currentImageDescriptor), currentImageKeypoints(currentImageKeypoints) {}
+      imagesDescriptors(imagesDescriptors), orb(orb), currentImageDescriptor(currentImageDescriptor), currentImageKeypoints(currentImageKeypoints) , currentImageGrayscale(currentImageGrayscale){}
 
 bool checkInteriorExterior(const cv::Mat &mask, const cv::Rect &croppingMask, int &top, int &bottom, int &left, int &right)
 {
-    // Return true if the rectangle is fine as it is
     bool result = true;
-
     cv::Mat sub = mask(croppingMask);
     int x = 0;
     int y = 0;
@@ -93,22 +91,8 @@ bool checkInteriorExterior(const cv::Mat &mask, const cv::Rect &croppingMask, in
     return result;
 }
 
-bool compareX(cv::Point a, cv::Point b)
+cv::Mat crop(cv::Mat &image,cv::Mat &gray)
 {
-    return a.x < b.x;
-}
-
-bool compareY(cv::Point a, cv::Point b)
-{
-    return a.y < b.y;
-}
-
-cv::Mat crop(cv::Mat &image)
-{
-    cv::Mat gray;
-    image.convertTo(image, CV_8U);
-    cv::cvtColor(image, gray, cv::COLOR_RGB2GRAY);
-    // Extract all the black background (and some interior parts maybe)
     cv::Mat mask = gray > 0;
     // now extract the outer contour
     std::vector<std::vector<cv::Point>> contours;
@@ -121,9 +105,9 @@ cv::Mat crop(cv::Mat &image)
     int id = 0;
     for (int i = 0; i < contours.size(); ++i)
     {
-        if (contours.at((unsigned long)i).size() > maxSize)
+        if (contours.at(i).size() > maxSize)
         {
-            maxSize = (int)contours.at((unsigned long)i).size();
+            maxSize = (int)contours.at(i).size();
             id = i;
         }
     }
@@ -131,10 +115,12 @@ cv::Mat crop(cv::Mat &image)
     cv::Mat contourMask = cv::Mat::zeros(image.size(), CV_8UC1);
     cv::drawContours(contourMask, contours, id, 255, -1, 8, hierarchy, 0, cv::Point());
     // Sort contour in x/y directions to easily find min/max and next
-    std::vector<cv::Point> cSortedX = contours.at((unsigned long)id);
-    std::sort(cSortedX.begin(), cSortedX.end(), compareX);
-    std::vector<cv::Point> cSortedY = contours.at((unsigned long)id);
-    std::sort(cSortedY.begin(), cSortedY.end(), compareY);
+    std::vector<cv::Point> cSortedX = contours.at(id);
+    std::sort(cSortedX.begin(), cSortedX.end(), [](cv::Point a, cv::Point b)
+              { return a.x < b.x; });
+    std::vector<cv::Point> cSortedY = contours.at(id);
+    std::sort(cSortedY.begin(), cSortedY.end(), [](cv::Point a, cv::Point b)
+              { return a.y < b.y; });
     int minXId = 0;
     int maxXId = (int)(cSortedX.size() - 1);
     int minYId = 0;
@@ -204,8 +190,7 @@ void Stitcher::processImage()
         previousIndexToMerge--;
         nextIndexToMerge++;
     }
-    cv::Mat croppedimg = crop(currentStitchedImage);
-    cv::imwrite("result.jpg", croppedimg);
+    cv::imwrite("result.jpg",currentStitchedImage);
 }
 
 void Stitcher::addImage(const std::string &filename, bool flag)
@@ -229,9 +214,11 @@ void Stitcher::addImage(const std::string &filename, bool flag)
 
 void Stitcher::setCurrentImage(cv::Mat &image)
 {
-    currentStitchedImage = image;
     cv::Mat gray;
     cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
+    currentImageGrayscale = gray;
+    cv::Mat croppedimg = crop(image,currentImageGrayscale);
+    currentStitchedImage=croppedimg;
     orb->detectAndCompute(gray, cv::noArray(), currentImageKeypoints, currentImageDescriptor);
 }
 
@@ -306,7 +293,7 @@ void Stitcher::getMatchingPoint(std::vector<cv::Point2f> &points1, std::vector<c
             points2.emplace_back(keypoints2[goodmatches[i].trainIdx].pt);
         }
     }
-    // showMatches(keypoints1, keypoints2, goodmatches, image1, image2);
+    //showMatches(keypoints1, keypoints2, goodmatches, image1, image2);
 }
 
 cv::Rect Stitcher::findWrapRect(cv::Size sz, cv::Mat &H)

@@ -36,11 +36,14 @@ public:
     // Keypoints detected in the currently processed image
     std::vector<cv::KeyPoint> &currentImageKeypoints;
 
+    //Grayscale version of the current Image
+    cv::Mat& currentImageGrayscale;
+
     // Feature detector and descriptor extractor
     cv::Ptr<cv::Feature2D> &orb;
 
     // constructor
-    Stitcher(std::vector<cv::Mat> &images, std::vector<cv::Mat> &grayscaledImages, cv::Mat &currentStitchedImage, std::vector<cv::Mat> &imagesDescriptors, std::vector<std::vector<cv::KeyPoint>> &imagesKeypoints, cv::Mat &currentImageDescriptor, cv::Ptr<cv::Feature2D> &orb, std::vector<cv::KeyPoint> &currentImageKeypoints);
+    Stitcher(std::vector<cv::Mat> &images, std::vector<cv::Mat> &grayscaledImages, cv::Mat &currentStitchedImage, std::vector<cv::Mat> &imagesDescriptors, std::vector<std::vector<cv::KeyPoint>> &imagesKeypoints, cv::Mat &currentImageDescriptor, cv::Ptr<cv::Feature2D> &orb, std::vector<cv::KeyPoint> &currentImageKeypoints,cv::Mat& currentImageGrayscale);
 
     // Process images to generate panorama
     void processImage();
@@ -76,13 +79,8 @@ public:
     // Find the bounding rectangle after warp perspective transformation
     cv::Rect findWrapRect(cv::Size sz, cv::Mat &H);
 
-    // friend cv::Mat cropToNonBlackRegion(const cv::Mat& img);
-    // friend cv::Rect findNonBlackRegion(const cv::Mat& img);
-    // friend cv::Rect findLargestContourRect(const cv::Mat &img);
     friend bool checkInteriorExterior(const cv::Mat &mask, const cv::Rect &croppingMask, int &top, int &bottom, int &left, int &right);
-    friend bool compareX(cv::Point a, cv::Point b);
-    friend bool compareY(cv::Point a, cv::Point b);
-    friend cv::Mat crop(cv::Mat &source);
+    friend cv::Mat crop(cv::Mat &image,cv::Mat &gray);
 };
 
 #endif

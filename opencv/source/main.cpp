@@ -14,13 +14,13 @@ int main(int argc, char *argv[]){
     // the following are the various attributes needed for the Stitcher Constructor
     std::vector<cv::Mat> images;
     std::vector<cv::Mat> grayscaledImages;
-    cv::Mat currentStitchedImages;
+    cv::Mat currentStitchedImages , currentImageGrayscale;
     std::vector<std::vector<cv::KeyPoint>> imageKeypoints;
     std::vector<cv::Mat> imageDescriptors;
     cv::Mat currentImageDescriptor;
     std::vector<cv::KeyPoint> currentImageKeypoints;
     cv::Ptr<cv::Feature2D> orb = cv::ORB::create(10000); // Orb is used
-    Stitcher stitcher = Stitcher(images,grayscaledImages,currentStitchedImages,imageDescriptors,imageKeypoints,currentImageDescriptor,orb,currentImageKeypoints);
+    Stitcher stitcher = Stitcher(images,grayscaledImages,currentStitchedImages,imageDescriptors,imageKeypoints,currentImageDescriptor,orb,currentImageKeypoints,currentImageGrayscale);
     // the images are added to the Stitcher Object, which are then processed by it
     for (int i = 0; i < count; i++){
         string temp;
