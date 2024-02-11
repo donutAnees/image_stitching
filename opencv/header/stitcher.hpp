@@ -25,7 +25,7 @@ public:
     cv::Ptr<cv::Feature2D>& orb;
     Stitcher(std::vector<cv::Mat>& images, std::vector<cv::Mat> &grayscaledImages, cv::Mat &currentStitchedImage,std::vector<cv::Mat>& imagesDescriptors ,std::vector<std::vector<cv::KeyPoint>> &imagesKeypoints,cv::Mat &currentImageDescriptor,cv::Ptr<cv::Feature2D>& orb,std::vector<cv::KeyPoint>& currentImageKeypoints);
     void processImage();
-    void addImage(const std::string &filename);
+    void addImage(const std::string &filename,bool flag);
     void mergeMiddleImages(cv::Mat& result,std::vector<cv::Point2f>& points1 ,std::vector<cv::Point2f>& points2, uint8_t middle);
     void mergeMidRightImages(std::vector<cv::Point2f>& points1 ,std::vector<cv::Point2f>& points2, int leftIndex);
     void mergeLeftMidImages(std::vector<cv::Point2f>& points1 ,std::vector<cv::Point2f>& points2, int rightIndex);

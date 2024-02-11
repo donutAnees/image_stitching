@@ -6,65 +6,6 @@ Stitcher::Stitcher(std::vector<cv::Mat> &images, std::vector<cv::Mat> &grayscale
       imagesKeypoints(imagesKeypoints),
       imagesDescriptors(imagesDescriptors), orb(orb), currentImageDescriptor(currentImageDescriptor), currentImageKeypoints(currentImageKeypoints) {}
 
-void Stitcher::processImage()
-{
-    uint8_t imageCount = images.size();
-    uint8_t middle = imageCount / 2 - 1;
-    int previousIndexToMerge;
-    int nextIndexToMerge;
-    if (imageCount % 2 == 0)
-    {
-        std::vector<cv::Point2f> points1, points2;
-        getMatchingPoint(points1, points2, imagesDescriptors[middle], imagesDescriptors[middle + 1], imagesKeypoints[middle], imagesKeypoints[middle + 1], images[middle], images[middle + 1]);
-        cv::Mat result;
-        mergeMiddleImages(result, points1, points2, middle);
-        setCurrentImage(result);
-        previousIndexToMerge = middle - 1;
-        nextIndexToMerge = middle + 2;
-    }
-    else
-    {
-        middle = middle + 1;
-        previousIndexToMerge = middle - 1;
-        nextIndexToMerge = middle + 1;
-        setCurrentImage(images[middle]);
-    }
-    while (previousIndexToMerge >= 0)
-    {
-        mergeLeftMidRightImages(previousIndexToMerge, nextIndexToMerge);
-        previousIndexToMerge--;
-        nextIndexToMerge++;
-    }
-    cv::Mat croppedimg = cropToNonBlackRegion(currentStitchedImage);
-    cv::imwrite("result.jpg", currentStitchedImage);
-    cv::imwrite("croppedresult.jpg", croppedimg);
-}
-
-void Stitcher::addImage(const std::string &filename)
-{
-    cv::Mat image = cv::imread(filename);
-    cv::Mat descriptors;
-    std::vector<cv::KeyPoint> keypoints;
-    orb->detectAndCompute(image, cv::noArray(), keypoints, descriptors);
-    images.emplace_back(image);
-    imagesKeypoints.emplace_back(keypoints);
-    imagesDescriptors.emplace_back(descriptors);
-}
-
-void Stitcher::setCurrentImage(cv::Mat &image)
-{
-    currentStitchedImage = image;
-    orb->detectAndCompute(image, cv::noArray(), currentImageKeypoints, currentImageDescriptor);
-}
-
-void Stitcher::showMatches(std::vector<cv::KeyPoint> &keypoints1, std::vector<cv::KeyPoint> &keypoints2, std::vector<cv::DMatch> &goodmatches, cv::Mat &image1, cv::Mat &image2)
-{
-    cv::Mat imMatches;
-    cv::drawMatches(image1, keypoints1, image2, keypoints2, goodmatches, imMatches);
-    cv::imshow("result", imMatches);
-    cv::waitKey(0);
-}
-
 cv::Rect findNonBlackRegion(const cv::Mat &img)
 {
     cv::Mat gray, binary;
@@ -87,6 +28,73 @@ cv::Mat cropToNonBlackRegion(const cv::Mat &img)
     return croppedimg;
 }
 
+void Stitcher::processImage()
+{
+    uint8_t imageCount = images.size();
+    uint8_t middle = imageCount / 2 - 1;
+    int previousIndexToMerge;
+    int nextIndexToMerge;
+    if (imageCount % 2 == 0)
+    {
+        std::vector<cv::Point2f> points1, points2;
+        getMatchingPoint(points1, points2, imagesDescriptors[middle], imagesDescriptors[middle + 1], imagesKeypoints[middle], imagesKeypoints[middle + 1], grayscaledImages[middle], grayscaledImages[middle + 1]);
+        cv::Mat result;
+        mergeMiddleImages(result, points1, points2, middle);
+        setCurrentImage(result);
+        previousIndexToMerge = middle - 1;
+        nextIndexToMerge = middle + 2;
+    }
+    else
+    {
+        middle = middle + 1;
+        previousIndexToMerge = middle - 1;
+        nextIndexToMerge = middle + 1;
+        setCurrentImage(images[middle]);
+    }
+    while (previousIndexToMerge >= 0)
+    {
+        mergeLeftMidRightImages(previousIndexToMerge, nextIndexToMerge);
+        previousIndexToMerge--;
+        nextIndexToMerge++;
+    }
+    cv::Mat croppedimg = cropToNonBlackRegion(currentStitchedImage);
+    cv::imwrite("result.jpg", croppedimg);
+}
+
+void Stitcher::addImage(const std::string &filename , bool flag)
+{
+    cv::Mat image = cv::imread(filename);
+    if(flag){
+    cv::Size newSize(image.cols / 4, image.rows / 4); 
+    cv::resize(image, image, newSize);
+    }
+    cv::Mat gray;
+    cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
+    cv::Mat descriptors;
+    std::vector<cv::KeyPoint> keypoints;
+    orb->detectAndCompute(gray, cv::noArray(), keypoints, descriptors);
+    images.emplace_back(image);
+    imagesKeypoints.emplace_back(keypoints);
+    imagesDescriptors.emplace_back(descriptors);
+    grayscaledImages.emplace_back(gray);
+}
+
+void Stitcher::setCurrentImage(cv::Mat &image)
+{
+    currentStitchedImage = image;
+    cv::Mat gray;
+    cv::cvtColor(image,gray,cv::COLOR_BGR2GRAY);
+    orb->detectAndCompute(gray, cv::noArray(), currentImageKeypoints, currentImageDescriptor);
+}
+
+void Stitcher::showMatches(std::vector<cv::KeyPoint> &keypoints1, std::vector<cv::KeyPoint> &keypoints2, std::vector<cv::DMatch> &goodmatches, cv::Mat &image1, cv::Mat &image2)
+{
+    cv::Mat imMatches;
+    cv::drawMatches(image1, keypoints1, image2, keypoints2, goodmatches, imMatches);
+    cv::imshow("result", imMatches);
+    cv::waitKey(0);
+}
+
 void Stitcher::mergeMiddleImages(cv::Mat &result, std::vector<cv::Point2f> &points1, std::vector<cv::Point2f> &points2, uint8_t middle)
 {
     cv::Mat H = cv::findHomography(points2, points1, cv::RANSAC, 8, cv::noArray(), 10000, 0.999);
@@ -104,8 +112,6 @@ void Stitcher::mergeMidRightImages(std::vector<cv::Point2f> &points1, std::vecto
     cv::Mat half(result, cv::Rect(0, 0, currentStitchedImage.cols, currentStitchedImage.rows));
     currentStitchedImage.copyTo(half);
     setCurrentImage(result);
-    // cv::imshow("result", result);
-    // cv::waitKey(0);
 }
 
 void Stitcher::mergeLeftMidImages(std::vector<cv::Point2f> &points1, std::vector<cv::Point2f> &points2, int leftIndex)
@@ -117,8 +123,7 @@ void Stitcher::mergeLeftMidImages(std::vector<cv::Point2f> &points1, std::vector
     cv::warpPerspective(images[leftIndex], result, T * H, cv::Size(roi.width + currentStitchedImage.cols, std::max(roi.height, currentStitchedImage.cols)));
     cv::Mat half(result, cv::Rect(-roi.x, -roi.y, currentStitchedImage.cols, currentStitchedImage.rows));
     currentStitchedImage.copyTo(half);
-    // cv::imshow("result", result);
-    // cv::waitKey(0);
+    setCurrentImage(result);
 }
 
 void Stitcher::mergeLeftMidRightImages(int leftIndex, int rightIndex)
@@ -149,8 +154,8 @@ void Stitcher::getMatchingPoint(std::vector<cv::Point2f> &points1, std::vector<c
     for (size_t i = 0; i < goodmatches.size(); i++)
     {
         {
-            points1.push_back(keypoints1[goodmatches[i].queryIdx].pt);
-            points2.push_back(keypoints2[goodmatches[i].trainIdx].pt);
+            points1.emplace_back(keypoints1[goodmatches[i].queryIdx].pt);
+            points2.emplace_back(keypoints2[goodmatches[i].trainIdx].pt);
         }
     }
     // showMatches(keypoints1, keypoints2, goodmatches, image1, image2);
