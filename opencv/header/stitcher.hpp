@@ -34,6 +34,8 @@ public:
     void mergeLeftMidRightImages(int leftIndex , int rightIndex);
     void getMatchingPoint(std::vector<cv::Point2f>& points1, std::vector<cv::Point2f>& points2,cv::Mat& descriptors1,cv::Mat& descriptors2, std::vector<cv::KeyPoint>& keypoints1, std::vector<cv::KeyPoint>& keypoints2,cv::Mat& image1,cv::Mat& image2);
     cv::Rect findWrapRect(cv::Size sz , cv::Mat& H);
+    friend cv::Mat cropToNonBlackRegion(const cv::Mat& img);
+    friend cv::Rect findNonBlackRegion(const cv::Mat& img);
 };
 
 #endif

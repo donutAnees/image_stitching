@@ -61,6 +61,14 @@ void Stitcher::showMatches(std::vector<cv::KeyPoint> &keypoints1, std::vector<cv
     cv::waitKey(0);
 }
 
+cv::Rect findNonBlackRegion(const cv::Mat& img) {
+    
+}
+
+cv::Mat cropToNonBlackRegion(const cv::Mat& img) {
+   
+}
+
 void Stitcher::mergeMiddleImages(cv::Mat &result, std::vector<cv::Point2f> &points1, std::vector<cv::Point2f> &points2, uint8_t middle)
 {
     cv::Mat H = cv::findHomography(points2, points1, cv::RANSAC, 8, cv::noArray(), 10000, 0.999);
@@ -88,10 +96,9 @@ void Stitcher::mergeLeftMidImages(std::vector<cv::Point2f>& points1 ,std::vector
     cv::Mat H = cv::findHomography(points1, points2, cv::RANSAC, 8, cv::noArray(), 10000, 0.999);
     cv::Rect roi = findWrapRect(currentStitchedImage.size(),H);
     cv::Mat T = (cv::Mat_<double>(3, 3) << 1, 0, -roi.x, 0, 1, -roi.y, 0, 0, 1);
-    cv::warpPerspective(images[leftIndex], result,T*H, cv::Size(roi.width + currentStitchedImage.cols,std::max(roi.width,currentStitchedImage.cols)));
+    cv::warpPerspective(images[leftIndex], result,T*H, cv::Size(roi.width + currentStitchedImage.cols,std::max(roi.height,currentStitchedImage.cols)));
     cv::Mat half(result, cv::Rect(-roi.x, -roi.y,currentStitchedImage.cols, currentStitchedImage.rows));
     currentStitchedImage.copyTo(half);
-    setCurrentImage(result);
     cv::imshow("result", result);
     cv::waitKey(0);
 }
