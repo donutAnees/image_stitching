@@ -12,14 +12,12 @@ bool checkInteriorExterior(const cv::Mat &mask, const cv::Rect &croppingMask, in
     cv::Mat sub = mask(croppingMask);
     int x = 0;
     int y = 0;
-    // Count how many exterior pixels are, and choose that side for reduction where most exterior pixels occurred (that's the heuristic)
     int top_row = 0;
     int bottom_row = 0;
     int left_column = 0;
     int right_column = 0;
     for (y = 0, x = 0; x < sub.cols; ++x)
     {
-        // If there is an exterior part in the interior we have to move the top side of the rect a bit to the bottom
         if (sub.at<char>(y, x) == 0)
         {
             result = false;
@@ -28,7 +26,6 @@ bool checkInteriorExterior(const cv::Mat &mask, const cv::Rect &croppingMask, in
     }
     for (y = (sub.rows - 1), x = 0; x < sub.cols; ++x)
     {
-        // If there is an exterior part in the interior we have to move the bottom side of the rect a bit to the top
         if (sub.at<char>(y, x) == 0)
         {
             result = false;
@@ -37,7 +34,6 @@ bool checkInteriorExterior(const cv::Mat &mask, const cv::Rect &croppingMask, in
     }
     for (y = 0, x = 0; y < sub.rows; ++y)
     {
-        // If there is an exterior part in the interior
         if (sub.at<char>(y, x) == 0)
         {
             result = false;
@@ -46,14 +42,12 @@ bool checkInteriorExterior(const cv::Mat &mask, const cv::Rect &croppingMask, in
     }
     for (x = (sub.cols - 1), y = 0; y < sub.rows; ++y)
     {
-        // If there is an exterior part in the interior
         if (sub.at<char>(y, x) == 0)
         {
             result = false;
             ++right_column;
         }
     }
-    // The idea is to set `top = 1` if it's better to reduce the rect at the top than anywhere else.
     if (top_row > bottom_row)
     {
         if (top_row > left_column)
@@ -94,13 +88,11 @@ bool checkInteriorExterior(const cv::Mat &mask, const cv::Rect &croppingMask, in
 cv::Mat crop(cv::Mat &image,cv::Mat &gray)
 {
     cv::Mat mask = gray > 0;
-    // now extract the outer contour
     std::vector<std::vector<cv::Point>> contours;
     std::vector<cv::Vec4i> hierarchy;
     cv::findContours(mask, contours, hierarchy, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE, cv::Point(0, 0));
     cv::Mat contourImage = cv::Mat::zeros(image.size(), CV_8UC3);
     ;
-    // Find contour with max elements
     int maxSize = 0;
     int id = 0;
     for (int i = 0; i < contours.size(); ++i)
@@ -111,10 +103,8 @@ cv::Mat crop(cv::Mat &image,cv::Mat &gray)
             id = i;
         }
     }
-    // Draw filled contour to obtain a mask with interior parts
     cv::Mat contourMask = cv::Mat::zeros(image.size(), CV_8UC1);
     cv::drawContours(contourMask, contours, id, 255, -1, 8, hierarchy, 0, cv::Point());
-    // Sort contour in x/y directions to easily find min/max and next
     std::vector<cv::Point> cSortedX = contours.at(id);
     std::sort(cSortedX.begin(), cSortedX.end(), [](cv::Point a, cv::Point b)
               { return a.x < b.x; });
@@ -131,7 +121,6 @@ cv::Mat crop(cv::Mat &image,cv::Mat &gray)
         cv::Point min(cSortedX[minXId].x, cSortedY[minYId].y);
         cv::Point max(cSortedX[maxXId].x, cSortedY[maxYId].y);
         croppingMask = cv::Rect(min.x, min.y, max.x - min.x, max.y - min.y);
-        // Out-codes: if one of them is set, the rectangle size has to be reduced at that border
         int ocTop = 0;
         int ocBottom = 0;
         int ocLeft = 0;
@@ -139,7 +128,6 @@ cv::Mat crop(cv::Mat &image,cv::Mat &gray)
         bool finished = checkInteriorExterior(contourMask, croppingMask, ocTop, ocBottom, ocLeft, ocRight);
         if (finished == true)
             break;
-        // Reduce rectangle at border if necessary
         if (ocLeft)
         {
             ++minXId;
@@ -157,7 +145,6 @@ cv::Mat crop(cv::Mat &image,cv::Mat &gray)
             --maxYId;
         }
     }
-    // Crop image with created mask
     return image(croppingMask);
 }
 
