@@ -86,12 +86,11 @@ void Stitcher::mergeLeftMidImages(std::vector<cv::Point2f>& points1 ,std::vector
 {
     cv::Mat result;
     cv::Mat H = cv::findHomography(points1, points2, cv::RANSAC, 8, cv::noArray(), 10000, 0.999);
-    cv::Rect roi = findWrapRect(images[leftIndex].size(),H);
-    cv::Point offset = roi.tl();
-    cv::Mat T = (cv::Mat_<double>(3, 3) << 1, 0, -offset.x, 0, 1, -offset.y, 0, 0, 1);
-    cv::warpPerspective(images[leftIndex], result,T*H, cv::Size(roi.width,roi.height));
-    //cv::Mat half(result, cv::Rect(roi.tl().x, 0,currentStitchedImage.cols, roi.height));
-    //currentStitchedImage.copyTo(half);
+    cv::Rect roi = findWrapRect(currentStitchedImage.size(),H);
+    cv::Mat T = (cv::Mat_<double>(3, 3) << 1, 0, -roi.x, 0, 1, -roi.y, 0, 0, 1);
+    cv::warpPerspective(images[leftIndex], result,T*H, cv::Size(roi.width + currentStitchedImage.cols,std::max(roi.width,currentStitchedImage.cols)));
+    cv::Mat half(result, cv::Rect(-roi.x, -roi.y,currentStitchedImage.cols, currentStitchedImage.rows));
+    currentStitchedImage.copyTo(half);
     setCurrentImage(result);
     cv::imshow("result", result);
     cv::waitKey(0);
