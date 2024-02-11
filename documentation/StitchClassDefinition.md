@@ -1,7 +1,9 @@
 # Class Definition
+
 This is the main class of this project, which has the following attributes and functions
 
 ## Attributes
+
 1. **images**
    - It is a vector of images which are to be stitched together.
    - Type: `std::vector<cv::Mat> &images`
@@ -35,13 +37,14 @@ This is the main class of this project, which has the following attributes and f
    - Type: `cv::Ptr<cv::Feature2D> &orb`
 
 ## Functions
+
 1. **processImage()**
    - This function processes the images by stitching them together into a panorama.
      - It calculates the number of images and determines the middle index.
      - If the number of images are odd then it will not merge the middle pics, else it will merge the middle pics, this is to make sure that the number of pics at both side from the middle is same.
      - It merges the images from the middle iteratively with images from left and right, this is done until there are no images on both side.
      - Finally, it crops the stitched image to remove any black regions and writes the result to a file.
-   
+
 2. **addImage(const std::string &filename, bool flag)**
    - This function adds a new image to the list of images to be stitched.
      - It reads the image from the specified file path.
@@ -85,11 +88,13 @@ This is the main class of this project, which has the following attributes and f
       - It calculates the transformed coordinates of the image corners
 
 11. **checkInteriorExterior(const cv::Mat &mask, const cv::Rect &croppingMask, int &top, int &bottom, int &left, int &right)**
-   - This function adjusts the cropping mask by checking the exterior of the contour
-      - It identifies if the top, right, bottom and left borders of the cropping rectangle has to be moved by comparing the exterior and interior of the contour
+
+- This function adjusts the cropping mask by checking the exterior of the contour
+  - It identifies if the top, right, bottom and left borders of the cropping rectangle has to be moved by comparing the exterior and interior of the contour
 
 12. **crop(cv::Mat &image,cv::Mat &gray)**
-   - This function crops the stitched image by removing the black areas around the image
-      - It finds the contours in the image and sorts them to identify the largest contour
-      - It initializes a cropping mask for the identified contour and calls upon the checkInteriorExterior() function for adjustments
-      - Adjusts the borders and returns the cropped image
+
+- This function crops the stitched image by removing the black areas around the image
+  - It finds the contours in the image and sorts them to identify the largest contour
+  - It initializes a cropping mask for the identified contour and calls upon the checkInteriorExterior() function for adjustments
+  - Adjusts the borders and returns the cropped image
