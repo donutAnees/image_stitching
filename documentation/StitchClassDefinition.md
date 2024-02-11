@@ -83,3 +83,13 @@ This is the main class of this project, which has the following attributes and f
 10. **findWrapRect(cv::Size sz, cv::Mat &H)**
     - This function finds the bounding rectangle of the warped image after perspective transformation.
       - It calculates the transformed coordinates of the image corners
+
+11. **checkInteriorExterior(const cv::Mat &mask, const cv::Rect &croppingMask, int &top, int &bottom, int &left, int &right)**
+   - This function adjusts the cropping mask by checking the exterior of the contour
+      - It identifies if the top, right, bottom and left borders of the cropping rectangle has to be moved by comparing the exterior and interior of the contour
+
+12. **crop(cv::Mat &image,cv::Mat &gray)**
+   - This function crops the stitched image by removing the black areas around the image
+      - It finds the contours in the image and sorts them to identify the largest contour
+      - It initializes a cropping mask for the identified contour and calls upon the checkInteriorExterior() function for adjustments
+      - Adjusts the borders and returns the cropped image

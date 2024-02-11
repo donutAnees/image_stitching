@@ -79,7 +79,10 @@ public:
     // Find the bounding rectangle after warp perspective transformation
     cv::Rect findWrapRect(cv::Size sz, cv::Mat &H);
 
+    // Adjust cropping mask by checking the exterior of the contour
     friend bool checkInteriorExterior(const cv::Mat &mask, const cv::Rect &croppingMask, int &top, int &bottom, int &left, int &right);
+    
+    // Crop the stitched image by removing the black areas around the image 
     friend cv::Mat crop(cv::Mat &image,cv::Mat &gray);
 };
 
