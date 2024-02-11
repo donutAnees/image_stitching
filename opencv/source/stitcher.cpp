@@ -74,7 +74,6 @@ void Stitcher::mergeMidRightImages(std::vector<cv::Point2f>& points1 ,std::vecto
 {
     cv::Mat result;
     cv::Mat H = cv::findHomography(points2, points1, cv::RANSAC, 8, cv::noArray(), 10000, 0.999);
-    cv::Rect roi = findWrapRect(images[rightIndex].size(),H);
     cv::warpPerspective(images[rightIndex], result, H, cv::Size(currentStitchedImage.cols + images[rightIndex].cols, std::max(currentStitchedImage.rows, images[rightIndex].rows)));
     cv::Mat half(result, cv::Rect(0, 0, currentStitchedImage.cols, currentStitchedImage.rows));
     currentStitchedImage.copyTo(half);
@@ -88,9 +87,11 @@ void Stitcher::mergeLeftMidImages(std::vector<cv::Point2f>& points1 ,std::vector
     cv::Mat result;
     cv::Mat H = cv::findHomography(points1, points2, cv::RANSAC, 8, cv::noArray(), 10000, 0.999);
     cv::Rect roi = findWrapRect(images[leftIndex].size(),H);
-    cv::warpPerspective(images[leftIndex], result, H, cv::Size(images[leftIndex].cols + currentStitchedImage.cols, std::max(images[leftIndex].rows, currentStitchedImage.rows)));
-    cv::Mat half(result, cv::Rect(images[leftIndex].cols, 0,currentStitchedImage.cols, currentStitchedImage.rows));
-    currentStitchedImage.copyTo(half);
+    cv::Point offset = roi.tl();
+    cv::Mat T = (cv::Mat_<double>(3, 3) << 1, 0, -offset.x, 0, 1, -offset.y, 0, 0, 1);
+    cv::warpPerspective(images[leftIndex], result,T*H, cv::Size(roi.width,roi.height));
+    //cv::Mat half(result, cv::Rect(roi.tl().x, 0,currentStitchedImage.cols, roi.height));
+    //currentStitchedImage.copyTo(half);
     setCurrentImage(result);
     cv::imshow("result", result);
     cv::waitKey(0);
