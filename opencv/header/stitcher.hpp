@@ -11,79 +11,71 @@
 #include <vector>
 #include <numeric>
 #include <iostream>
+#include <chrono>
 
 class Stitcher
 {
-public:
-    // Vector of input images
-    std::vector<cv::Mat> &images;
+    private:
+        // used to detect features
+        static const cv::Ptr<cv::Feature2D> descriptor;
+        // To get matches
+        static const cv::BFMatcher matcher;
+        // Vector of input images
+        std::vector<cv::Mat> images;
+        // Vector of grayscale versions of input images
+        std::vector<cv::Mat> grayscaledImages;
 
-    // Vector of descriptors corresponding to each image
-    std::vector<cv::Mat> &imagesDescriptors;
+        /* Features - Keypoints and Descriptor */
+        // Vector of descriptors corresponding to each image
+        std::vector<cv::Mat> imagesDescriptor;
+        // Vector of keypoints corresponding to each image
+        std::vector<std::vector<cv::KeyPoint>> imagesKeypoints;
 
-    // Vector of keypoints corresponding to each image
-    std::vector<std::vector<cv::KeyPoint>> &imagesKeypoints;
+        // Train Index and Query Index matches between previous and next image
+        std::vector<std::pair<std::vector<int>, std::vector<int>>> matches;
+        // Indices of the previous vector matches, where the matches are true matches, that is aren't too far apart or wrong matches
+        std::vector<std::vector<bool>> true_matches;
 
-    // Vector of grayscale versions of input images
-    std::vector<cv::Mat> &grayscaledImages;
+        // Vector of homography from the previous image to the next image
+        std::vector<cv::Mat> homographies;
 
-    // Currently stitched image (result of stitching process)
-    cv::Mat &currentStitchedImage;
+        // Result
+        std::pair<cv::Mat, cv::Point> pano;
 
-    // Descriptor of the currently processed image
-    cv::Mat &currentImageDescriptor;
+    public:
+        /* Constructors */
+        Stitcher();
+        Stitcher(const cv::Mat &img);
 
-    // Keypoints detected in the currently processed image
-    std::vector<cv::KeyPoint> &currentImageKeypoints;
+        // Extract keypoints and descriptor from image
+        void extract(const cv::Mat &img);
 
-    //Grayscale version of the current Image
-    cv::Mat& currentImageGrayscale;
+        // Add images to stitcher
+        void addImage(const cv::Mat &img);
 
-    // Feature detector and descriptor extractor
-    cv::Ptr<cv::Feature2D> &orb;
+        // Returns IDs of matched features given descriptors
+        // {trainIds, queryIds}
+        std::pair<std::vector<int>, std::vector<int>> getMatchingPoint(const cv::Mat &prev, const cv::Mat &current);
 
-    // constructor
-    Stitcher(std::vector<cv::Mat> &images, std::vector<cv::Mat> &grayscaledImages, cv::Mat &currentStitchedImage, std::vector<cv::Mat> &imagesDescriptors, std::vector<std::vector<cv::KeyPoint>> &imagesKeypoints, cv::Mat &currentImageDescriptor, cv::Ptr<cv::Feature2D> &orb, std::vector<cv::KeyPoint> &currentImageKeypoints,cv::Mat& currentImageGrayscale);
+        // Find the homography matrix
+        std::pair<cv::Mat, std::vector<bool>> getHomography( 
+            const std::vector<int> &trainIDs, 
+            const std::vector<int> &queryIDs, 
+            const std::vector<cv::Point2f> &trainPts, 
+            const std::vector<cv::Point2f> &queryPts
+        );
 
-    // Process images to generate panorama
-    void processImage();
+        // Get the Panorama
+        std::pair<cv::Mat, cv::Point> getPano(const cv::Mat &img, const cv::Mat &lastPano, const cv::Mat &H);
 
-    // Add image to the stitching pipeline
-    void addImage(const std::string &filename, bool flag);
+        // Get Rect of required Size for the output image
+        cv::Rect warpRect(cv::Size sz, const cv::Mat &H);
 
-    // Merge the middle and middle + 1 images when the number of images are even
-    void mergeMiddleImages(cv::Mat &result, std::vector<cv::Point2f> &points1, std::vector<cv::Point2f> &points2, uint8_t middle);
+        // Warp the image using homography
+        cv::Mat warpImage(const cv::Mat &img, const cv::Mat &H, cv::Point orig);
 
-    // Merge the current image with the image to its right
-    void mergeMidRightImages(std::vector<cv::Point2f> &points1, std::vector<cv::Point2f> &points2, int rightIndex);
+        void print();
+};      
 
-    // Merge the current image with the image to its left
-    void mergeLeftMidImages(std::vector<cv::Point2f> &points1, std::vector<cv::Point2f> &points2, int leftIndex);
 
-    // Merge current image with both left and right, this function uses the mergeMidRightImage and mergeLeftMidImage functions
-    void mergeLeftMidRightImages(int leftIndex, int rightIndex);
-
-    // Set the current image
-    void setCurrentImage(cv::Mat &image);
-
-    // Display matches between keypoints of two images (for debugging)
-    void showMatches(std::vector<cv::KeyPoint> &keypoints1, std::vector<cv::KeyPoint> &keypoints2,
-                     std::vector<cv::DMatch> &goodmatches, cv::Mat &image1, cv::Mat &image2);
-
-    // Find matching keypoints between two images
-    void getMatchingPoint(std::vector<cv::Point2f> &points1, std::vector<cv::Point2f> &points2,
-                          cv::Mat &descriptors1, cv::Mat &descriptors2,
-                          std::vector<cv::KeyPoint> &keypoints1, std::vector<cv::KeyPoint> &keypoints2,
-                          cv::Mat &image1, cv::Mat &image2);
-
-    // Find the bounding rectangle after warp perspective transformation
-    cv::Rect findWrapRect(cv::Size sz, cv::Mat &H);
-
-    // Adjust cropping mask by checking the exterior of the contour
-    friend bool checkInteriorExterior(const cv::Mat &mask, const cv::Rect &croppingMask, int &top, int &bottom, int &left, int &right);
-    
-    // Crop the stitched image by removing the black areas around the image 
-    friend cv::Mat crop(cv::Mat &image,cv::Mat &gray);
-};
-
-#endif
+#endif 

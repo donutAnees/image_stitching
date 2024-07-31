@@ -1,298 +1,162 @@
 #include "../header/stitcher.hpp"
 
-Stitcher::Stitcher(std::vector<cv::Mat> &images, std::vector<cv::Mat> &grayscaledImages, cv::Mat &currentStitchedImage, std::vector<cv::Mat> &imagesDescriptors, std::vector<std::vector<cv::KeyPoint>> &imagesKeypoints, cv::Mat &currentImageDescriptor, cv::Ptr<cv::Feature2D> &orb, std::vector<cv::KeyPoint> &currentImageKeypoints,cv::Mat& currentImageGrayscale)
-    : images(images), grayscaledImages(grayscaledImages),
-      currentStitchedImage(currentStitchedImage),
-      imagesKeypoints(imagesKeypoints),
-      imagesDescriptors(imagesDescriptors), orb(orb), currentImageDescriptor(currentImageDescriptor), currentImageKeypoints(currentImageKeypoints) , currentImageGrayscale(currentImageGrayscale){}
+const cv::Ptr<cv::Feature2D>  Stitcher::descriptor = cv::ORB::create();
+const cv::BFMatcher Stitcher::matcher = cv::BFMatcher(cv::NORM_HAMMING2);
 
-bool checkInteriorExterior(const cv::Mat &mask, const cv::Rect &croppingMask, int &top, int &bottom, int &left, int &right)
-{
-    bool result = true;
-    cv::Mat sub = mask(croppingMask);
-    int x = 0;
-    int y = 0;
-    int top_row = 0;
-    int bottom_row = 0;
-    int left_column = 0;
-    int right_column = 0;
-    for (y = 0, x = 0; x < sub.cols; ++x)
-    {
-        if (sub.at<char>(y, x) == 0)
-        {
-            result = false;
-            ++top_row;
-        }
-    }
-    for (y = (sub.rows - 1), x = 0; x < sub.cols; ++x)
-    {
-        if (sub.at<char>(y, x) == 0)
-        {
-            result = false;
-            ++bottom_row;
-        }
-    }
-    for (y = 0, x = 0; y < sub.rows; ++y)
-    {
-        if (sub.at<char>(y, x) == 0)
-        {
-            result = false;
-            ++left_column;
-        }
-    }
-    for (x = (sub.cols - 1), y = 0; y < sub.rows; ++y)
-    {
-        if (sub.at<char>(y, x) == 0)
-        {
-            result = false;
-            ++right_column;
-        }
-    }
-    if (top_row > bottom_row)
-    {
-        if (top_row > left_column)
-        {
-            if (top_row > right_column)
-            {
-                top = 1;
-            }
-        }
-    }
-    else if (bottom_row > left_column)
-    {
-        if (bottom_row > right_column)
-        {
-            bottom = 1;
-        }
-    }
-    if (left_column >= right_column)
-    {
-        if (left_column >= bottom_row)
-        {
-            if (left_column >= top_row)
-            {
-                left = 1;
-            }
-        }
-    }
-    else if (right_column >= top_row)
-    {
-        if (right_column >= bottom_row)
-        {
-            right = 1;
-        }
-    }
-    return result;
+std::vector<cv::Point2f> getPoints(std::vector<cv::KeyPoint> &kps) {
+    std::vector<cv::Point2f> res(kps.size());
+    for (size_t i = 0; i < kps.size(); i++)
+        res[i] = kps[i].pt;
+    return res;
 }
 
-cv::Mat crop(cv::Mat &image,cv::Mat &gray)
-{
-    cv::Mat mask = gray > 0;
-    std::vector<std::vector<cv::Point>> contours;
-    std::vector<cv::Vec4i> hierarchy;
-    cv::findContours(mask, contours, hierarchy, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE, cv::Point(0, 0));
-    cv::Mat contourImage = cv::Mat::zeros(image.size(), CV_8UC3);
-    ;
-    int maxSize = 0;
-    int id = 0;
-    for (int i = 0; i < contours.size(); ++i)
-    {
-        if (contours.at(i).size() > maxSize)
-        {
-            maxSize = (int)contours.at(i).size();
-            id = i;
-        }
-    }
-    cv::Mat contourMask = cv::Mat::zeros(image.size(), CV_8UC1);
-    cv::drawContours(contourMask, contours, id, 255, -1, 8, hierarchy, 0, cv::Point());
-    std::vector<cv::Point> cSortedX = contours.at(id);
-    std::sort(cSortedX.begin(), cSortedX.end(), [](cv::Point a, cv::Point b)
-              { return a.x < b.x; });
-    std::vector<cv::Point> cSortedY = contours.at(id);
-    std::sort(cSortedY.begin(), cSortedY.end(), [](cv::Point a, cv::Point b)
-              { return a.y < b.y; });
-    int minXId = 0;
-    int maxXId = (int)(cSortedX.size() - 1);
-    int minYId = 0;
-    int maxYId = (int)(cSortedY.size() - 1);
-    cv::Rect croppingMask;
-    while ((minXId < maxXId) && (minYId < maxYId))
-    {
-        cv::Point min(cSortedX[minXId].x, cSortedY[minYId].y);
-        cv::Point max(cSortedX[maxXId].x, cSortedY[maxYId].y);
-        croppingMask = cv::Rect(min.x, min.y, max.x - min.x, max.y - min.y);
-        int ocTop = 0;
-        int ocBottom = 0;
-        int ocLeft = 0;
-        int ocRight = 0;
-        bool finished = checkInteriorExterior(contourMask, croppingMask, ocTop, ocBottom, ocLeft, ocRight);
-        if (finished == true)
-            break;
-        if (ocLeft)
-        {
-            ++minXId;
-        }
-        if (ocRight)
-        {
-            --maxXId;
-        }
-        if (ocTop)
-        {
-            ++minYId;
-        }
-        if (ocBottom)
-        {
-            --maxYId;
-        }
-    }
-    return image(croppingMask);
-}
-
-void Stitcher::processImage()
-{
-    uint8_t imageCount = images.size();
-    uint8_t middle = imageCount / 2 - 1;
-    int previousIndexToMerge;
-    int nextIndexToMerge;
-    if (imageCount % 2 == 0)
-    {
-        std::vector<cv::Point2f> points1, points2;
-        getMatchingPoint(points1, points2, imagesDescriptors[middle], imagesDescriptors[middle + 1], imagesKeypoints[middle], imagesKeypoints[middle + 1], grayscaledImages[middle], grayscaledImages[middle + 1]);
-        cv::Mat result;
-        mergeMiddleImages(result, points1, points2, middle);
-        setCurrentImage(result);
-        previousIndexToMerge = middle - 1;
-        nextIndexToMerge = middle + 2;
-    }
-    else
-    {
-        middle = middle + 1;
-        previousIndexToMerge = middle - 1;
-        nextIndexToMerge = middle + 1;
-        setCurrentImage(images[middle]);
-    }
-    while (previousIndexToMerge >= 0)
-    {
-        mergeLeftMidRightImages(previousIndexToMerge, nextIndexToMerge);
-        previousIndexToMerge--;
-        nextIndexToMerge++;
-    }
-    cv::imwrite("result.jpg",currentStitchedImage);
-}
-
-void Stitcher::addImage(const std::string &filename, bool flag)
-{
-    cv::Mat image = cv::imread(filename);
-    if (flag)
-    {
-        cv::Size newSize(image.cols / 4, image.rows / 4);
-        cv::resize(image, image, newSize);
-    }
-    cv::Mat gray;
-    cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
-    cv::Mat descriptors;
-    std::vector<cv::KeyPoint> keypoints;
-    orb->detectAndCompute(gray, cv::noArray(), keypoints, descriptors);
-    images.emplace_back(image);
-    imagesKeypoints.emplace_back(keypoints);
-    imagesDescriptors.emplace_back(descriptors);
-    grayscaledImages.emplace_back(gray);
-}
-
-void Stitcher::setCurrentImage(cv::Mat &image)
-{
-    cv::Mat gray;
-    cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
-    currentImageGrayscale = gray;
-    cv::Mat croppedimg = crop(image,currentImageGrayscale);
-    currentStitchedImage=croppedimg;
-    orb->detectAndCompute(gray, cv::noArray(), currentImageKeypoints, currentImageDescriptor);
-}
-
-void Stitcher::showMatches(std::vector<cv::KeyPoint> &keypoints1, std::vector<cv::KeyPoint> &keypoints2, std::vector<cv::DMatch> &goodmatches, cv::Mat &image1, cv::Mat &image2)
+void showMatches(std::vector<cv::KeyPoint> &keypoints1, std::vector<cv::KeyPoint> &keypoints2, const std::vector<std::vector<cv::DMatch>> &goodmatches, cv::Mat &image1, cv::Mat &image2)
 {
     cv::Mat imMatches;
     cv::drawMatches(image1, keypoints1, image2, keypoints2, goodmatches, imMatches);
-    cv::imshow("result", imMatches);
-    cv::waitKey(0);
+    cv::imwrite("result.jpg", imMatches);
 }
 
-void Stitcher::mergeMiddleImages(cv::Mat &result, std::vector<cv::Point2f> &points1, std::vector<cv::Point2f> &points2, uint8_t middle)
+void Stitcher::print()
 {
-    cv::Mat H = cv::findHomography(points2, points1, cv::RANSAC, 8, cv::noArray(), 10000, 0.999);
-    cv::warpPerspective(images[middle + 1], result, H, cv::Size(images[middle].cols + images[middle + 1].cols, std::max(images[middle + 1].rows, images[middle].rows)));
-    cv::Mat half(result, cv::Rect(0, 0, images[middle].cols, images[middle].rows));
-    images[middle].copyTo(half);
-    currentStitchedImage = result;
+    cv::imwrite("result.jpg", pano.first);
 }
 
-void Stitcher::mergeMidRightImages(std::vector<cv::Point2f> &points1, std::vector<cv::Point2f> &points2, int rightIndex)
+cv::Point shift(cv::Mat &img, cv::Rect rect) {
+  int top = 0, bottom = 0, left = 0, right = 0;
+  cv::Point tl = rect.tl();
+  cv::Point br = rect.br();
+  if (tl.y < 0)
+    top = -tl.y;
+  if (br.y > img.rows)
+    bottom = br.y - img.rows;
+  if (tl.x < 0)
+    left = -tl.x;
+  if (br.x > img.cols)
+    right = br.x - img.cols;
+  cv::copyMakeBorder(img, img, top, bottom, left, right, cv::BORDER_CONSTANT);
+  return cv::Point(left, top);
+}
+
+cv::Rect crop(const cv::Mat &img) {
+  std::vector<cv::Point> nonBlackList;
+  nonBlackList.reserve(img.total());
+  for (int j = 0; j < img.rows; j++)
+    for (int i = 0; i < img.cols; i++)
+      if (img.at<cv::Vec3b>(j, i) != cv::Vec3b(0, 0, 0))
+        nonBlackList.push_back(cv::Point(i, j));
+  return cv::boundingRect(nonBlackList);
+}
+
+Stitcher::Stitcher(){};
+
+Stitcher::Stitcher(const cv::Mat &img){
+    extract(img);
+    pano = std::make_pair(img, cv::Point(0, 0));
+}
+
+void Stitcher::extract(const cv::Mat &img)
 {
-    cv::Mat result;
-    cv::Mat H = cv::findHomography(points2, points1, cv::RANSAC, 8, cv::noArray(), 10000, 0.999);
-    cv::warpPerspective(images[rightIndex], result, H, cv::Size(currentStitchedImage.cols + images[rightIndex].cols, std::max(currentStitchedImage.rows, images[rightIndex].rows)));
-    cv::Mat half(result, cv::Rect(0, 0, currentStitchedImage.cols, currentStitchedImage.rows));
-    currentStitchedImage.copyTo(half);
-    setCurrentImage(result);
+    images.push_back(img.clone());
+    // convert to grayscale
+    cv::Mat gray;
+    cv::cvtColor(img, gray, cv::COLOR_BGR2GRAY);
+    grayscaledImages.push_back(gray);
+    // Detect and compute
+    cv::Mat descriptors;
+    std::vector<cv::KeyPoint> keypoints;
+    Stitcher::descriptor->detectAndCompute(gray, cv::noArray(), keypoints, descriptors);
+    imagesKeypoints.push_back(keypoints);
+    imagesDescriptor.push_back(descriptors);
 }
 
-void Stitcher::mergeLeftMidImages(std::vector<cv::Point2f> &points1, std::vector<cv::Point2f> &points2, int leftIndex)
-{
-    cv::Mat result;
-    cv::Mat H = cv::findHomography(points1, points2, cv::RANSAC, 8, cv::noArray(), 10000, 0.999);
-    cv::Rect roi = findWrapRect(currentStitchedImage.size(), H);
-    cv::Mat T = (cv::Mat_<double>(3, 3) << 1, 0, -roi.x, 0, 1, -roi.y, 0, 0, 1);
-    cv::warpPerspective(images[leftIndex], result, T * H, cv::Size(roi.width + currentStitchedImage.cols, std::max(roi.height, currentStitchedImage.cols)));
-    cv::Mat half(result, cv::Rect(-roi.x, -roi.y, currentStitchedImage.cols, currentStitchedImage.rows));
-    currentStitchedImage.copyTo(half);
-    setCurrentImage(result);
-}
-
-void Stitcher::mergeLeftMidRightImages(int leftIndex, int rightIndex)
-{
-    cv::Mat lDescriptors = imagesDescriptors[leftIndex], rDescriptors = imagesDescriptors[rightIndex];
-    std::vector<cv::KeyPoint> lKeypoints = imagesKeypoints[leftIndex], rKeypoints = imagesKeypoints[rightIndex];
-    std::vector<cv::Point2f> lpoints, rpoints, lmpoints, rmpoints;
-    getMatchingPoint(rpoints, rmpoints, currentImageDescriptor, rDescriptors, currentImageKeypoints, rKeypoints, currentStitchedImage, images[rightIndex]);
-    mergeMidRightImages(rpoints, rmpoints, rightIndex);
-    getMatchingPoint(lpoints, lmpoints, lDescriptors, currentImageDescriptor, lKeypoints, currentImageKeypoints, images[leftIndex], currentStitchedImage);
-    mergeLeftMidImages(lpoints, lmpoints, leftIndex);
-}
-
-void Stitcher::getMatchingPoint(std::vector<cv::Point2f> &points1, std::vector<cv::Point2f> &points2, cv::Mat &descriptors1, cv::Mat &descriptors2, std::vector<cv::KeyPoint> &keypoints1, std::vector<cv::KeyPoint> &keypoints2, cv::Mat &image1, cv::Mat &image2)
+std::pair<std::vector<int>, std::vector<int>> Stitcher::getMatchingPoint(const cv::Mat &prev, const cv::Mat &current)
 {
     std::vector<std::vector<cv::DMatch>> matches;
-    cv::BFMatcher matcher = cv::BFMatcher(cv::NORM_HAMMING2); // Hamming is good for binary string based algorithms , cross checker can be true if ratio is not used
-    matcher.knnMatch(descriptors1, descriptors2, matches, 2);
-    std::vector<cv::DMatch> goodmatches;
-    for (int i = 0; i < matches.size(); i++)
-    {
-        if (matches[i][0].distance < 0.75 * matches[i][1].distance)
-        {
-            goodmatches.emplace_back(matches[i][0]);
+    matcher.knnMatch(current, prev, matches, 2);
+    std::vector<int> trainIDs, queryIDs;
+    double ratio = 0.75;
+    for (std::vector<cv::DMatch> &m : matches) {
+        if ((m.size() == 2) && (m[0].distance < m[1].distance * ratio)) {
+        trainIDs.push_back(m[0].trainIdx);
+        queryIDs.push_back(m[0].queryIdx);
         }
     }
-
-    for (size_t i = 0; i < goodmatches.size(); i++)
-    {
-        {
-            points1.emplace_back(keypoints1[goodmatches[i].queryIdx].pt);
-            points2.emplace_back(keypoints2[goodmatches[i].trainIdx].pt);
-        }
-    }
-    //showMatches(keypoints1, keypoints2, goodmatches, image1, image2);
+    int n = images.size();
+    // showMatches(imagesKeypoints[n-2], imagesKeypoints[n-1], matches, images[n-1], images.back());
+    return std::make_pair(trainIDs, queryIDs);
 }
 
-cv::Rect Stitcher::findWrapRect(cv::Size sz, cv::Mat &H)
+void Stitcher::addImage(const cv::Mat& img) {
+    extract(img);
+    int n = images.size();
+    std::pair<std::vector<int>, std::vector<int>> currentmatches = getMatchingPoint(imagesDescriptor[n-2],imagesDescriptor[n-1]);
+    std::pair<cv::Mat, std::vector<bool>> homography = getHomography(currentmatches.first, currentmatches.second, getPoints(imagesKeypoints[n-2]), getPoints(imagesKeypoints[n-1]));
+    matches.push_back(currentmatches);
+    homographies.push_back(homography.first);
+    true_matches.push_back(homography.second);
+    const cv::Mat &prevPano = pano.first;
+    const cv::Point &prevOrig = pano.second;
+    const std::vector<int> &trainIDs = matches.back().first;
+    const std::vector<int> &queryIDs = matches.back().second;
+    std::vector<cv::Point2f> trainPts = getPoints(imagesKeypoints[imagesKeypoints.size() - 2]);
+    std::vector<cv::Point2f> queryPts = getPoints(imagesKeypoints.back());
+    for (cv::Point2f &pt : trainPts)
+        pt += (cv::Point2f) pano.second;
+    cv::Mat corrH = getHomography(trainIDs, queryIDs, trainPts, queryPts).first;
+    pano = getPano(img,prevPano,corrH);
+}
+
+std::pair<cv::Mat, std::vector<bool>> Stitcher::getHomography(const std::vector<int> &trainIDs, const std::vector<int> &queryIDs, const std::vector<cv::Point2f> &trainPts, const std::vector<cv::Point2f> &queryPts)
 {
-    std::vector<cv::Point2f> corners(4);
-    int w = sz.width;
-    int h = sz.height;
-    corners[0] = cv::Point2f(0, 0);
-    corners[1] = cv::Point2f(w, 0);
-    corners[2] = cv::Point2f(0, h);
-    corners[3] = cv::Point2f(w, h);
-    std::vector<cv::Point2f> warpedCorners;
-    cv::perspectiveTransform(corners, warpedCorners, H);
-    return cv::boundingRect(warpedCorners);
+    std::vector<cv::Point2f> srcPoints, dstPoints;
+    for (size_t i = 0; i < trainIDs.size(); i++) {
+        srcPoints.push_back(trainPts[trainIDs[i]]);
+        dstPoints.push_back(queryPts[queryIDs[i]]);
+    }
+    cv::Mat mask;
+    cv::Mat H = cv::estimateAffine2D(srcPoints, dstPoints, mask);
+    int rows = mask.rows;
+    std::vector<bool> state(rows);
+    for (int i = 0; i < rows; i++)
+        state[i] = mask.at<bool>(i, 0);
+    H.push_back(cv::Mat((cv::Mat1d(1, 3) << 0, 0, 1)));
+    return std::make_pair(H, state);
+}
+
+cv::Rect Stitcher::warpRect(cv::Size sz, const cv::Mat &homography) {
+  std::vector<cv::Point2f> corners(4);
+  float width = static_cast<float>(sz.width);
+  float height = static_cast<float>(sz.height);
+  corners[0] = cv::Point2f(0, 0); // top left
+  corners[1] = cv::Point2f(width, 0); // top right
+  corners[2] = cv::Point2f(0, height); // bottom left
+  corners[3] = cv::Point2f(width, height); // bottom right
+  std::vector<cv::Point2f> warpedCorners;
+  cv::perspectiveTransform(corners, warpedCorners, homography);
+  return cv::boundingRect(warpedCorners);
+}
+
+cv::Mat Stitcher::warpImage(const cv::Mat &img, const cv::Mat &H,
+                            cv::Point orig) {
+  cv::Rect roi = warpRect(img.size(), H);
+  // Transform the origin
+  cv::Mat T = (cv::Mat_<double>(3, 3) << 1, 0, -orig.x, 0, 1, -orig.y, 0, 0, 1);
+  cv::Mat corrH = T * H;
+  cv::Mat warped;
+  cv::Size dsize = warpRect(img.size(), corrH).size(); 
+  warpPerspective(img, warped, corrH, dsize);
+  return warped;
+}
+
+std::pair<cv::Mat, cv::Point> Stitcher::getPano(const cv::Mat &img, const cv::Mat &lastPano, const cv::Mat &H){
+    cv::Point orig = warpRect(lastPano.size(), H).tl(); 
+    cv::Mat currentpano = warpImage(img,H,orig);
+    cv::Rect newRect(-orig, img.size());
+    cv::Point shiftedPoint = shift(currentpano,newRect);
+    img.copyTo(currentpano(cv::Rect(shiftedPoint-orig,img.size())));
+    cv::Rect blackborder = crop(currentpano);
+    currentpano = currentpano(blackborder);
+    cv::Point newOrig = shiftedPoint - orig - blackborder.tl();
+    return std::make_pair(currentpano, newOrig);
 }
