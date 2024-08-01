@@ -22,9 +22,6 @@ class Stitcher
         static const cv::BFMatcher matcher;
         // Vector of input images
         std::vector<cv::Mat> images;
-        // Vector of grayscale versions of input images
-        std::vector<cv::Mat> grayscaledImages;
-
         /* Features - Keypoints and Descriptor */
         // Vector of descriptors corresponding to each image
         std::vector<cv::Mat> imagesDescriptor;
@@ -41,7 +38,7 @@ class Stitcher
 
         // Result
         std::pair<cv::Mat, cv::Point> pano;
-
+        
     public:
         /* Constructors */
         Stitcher();
@@ -74,7 +71,8 @@ class Stitcher
         // Warp the image using homography
         cv::Mat warpImage(const cv::Mat &img, const cv::Mat &H, cv::Point orig);
 
-        void print();
+        // Get Pano
+        std::pair<cv::Mat, cv::Point> getPano();
 };      
 
 
