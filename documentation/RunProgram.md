@@ -7,18 +7,19 @@
 From the **/IMAGE_STITCHING** directory, run the following commands
 `cd opencv` and 
 `cmake .`
-This will search for the CMakeLists.txt file in the opencv folder and follows the specification mentioned there to generate the project files 
+`make`
+This will search for the CMakeLists.txt file in the opencv folder and follows the specification mentioned there to generate the project files and builds the target.
 
 ## Input to the program
 The program expects the following arguments as input
-    - Resizing needed (ex: 0 if no resizing needed or 1 if resizing needed)
     - Number of images (ex: 4)
     - Name of the images with extension (ex: img1.jpg img2.jpg img3.jpg img4.jpg)
 
+```
+./Stitcher 2 img1.jpg img2.jpg
+
+```
+
 If resizing is enabled, the program will be executed with high speed with a hit at accuracy, if accuracy is preferred then resizing can be disabled this will make the program run a bit slower but the results will be accurate.
-
-There is a input file called input.txt, this can be given as input to the ./Stitcher program to avoid manually typing the arguments during runtime.
-
-`./Stitcher < input.txt`
 
 Once the program is done executing the result is written to the result.jpg file
