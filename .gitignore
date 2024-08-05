@@ -8,3 +8,37 @@ opencv/CMakeCache.txt
 opencv/CMakeLists.txt
 opencv/cmake_install.cmake
 opencv/CMakeFiles
+
+backend/HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!backend/src/main/**/target/
+!backend/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!backend/src/main/**/build/
+!backend/src/test/**/build/
+
+### VS Code ###
+.vscode/
