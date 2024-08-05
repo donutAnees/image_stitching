@@ -11,12 +11,11 @@ From the **/IMAGE_STITCHING** directory, run the following commands
 This will search for the CMakeLists.txt file in the opencv folder and follows the specification mentioned there to generate the project files and builds the target.
 
 ## Input to the program
-The program expects the following arguments as input
-    - Number of images (ex: 4)
+The program expects the following argument as input
     - Name of the images with extension (ex: img1.jpg img2.jpg img3.jpg img4.jpg)
 
 ```
-./Stitcher 2 img1.jpg img2.jpg
+./Stitcher img1.jpg img2.jpg
 
 ```
 
