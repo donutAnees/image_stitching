@@ -11,7 +11,6 @@
 #include <vector>
 #include <numeric>
 #include <iostream>
-#include <chrono>
 
 class Stitcher
 {
