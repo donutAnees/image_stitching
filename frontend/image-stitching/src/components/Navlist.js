@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-const item = ["Samples"];
+const item = ["samples"];
 
 export default function Navlist() {
   return (
@@ -7,7 +7,7 @@ export default function Navlist() {
       <ul className="flex">
         {item.map((i, index) => {
           return (
-            <Link key={index} to={"/samples"} className="px-1.5 md:px-6 font-medium text-l hover:text-sky-500">
+            <Link key={index} to={`/${i}`} className="px-1.5 md:px-6 font-medium text-l hover:text-sky-500">
               {i}
             </Link>
           );

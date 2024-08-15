@@ -1,7 +1,10 @@
+import Hero from "../components/Hero";
+
+const downloadLinks = []
+
 export default function Samples() {
   return (
-      <>
-      Dummy for now
-      </>
+      <Hero>
+      </Hero> 
   );
 }
