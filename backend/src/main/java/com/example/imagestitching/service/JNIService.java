@@ -4,4 +4,6 @@ public class JNIService {
     static {
         System.loadLibrary("libstitcher");
     }
+
+    private native void callStitcher();
 }

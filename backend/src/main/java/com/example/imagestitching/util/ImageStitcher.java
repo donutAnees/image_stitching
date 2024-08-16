@@ -8,7 +8,10 @@ import java.awt.image.BufferedImage;
 
 @Component
 public class ImageStitcher {
+    @Autowired
+    JNIService jniService;
+
     public Image stitchImage(MultipartFile[] images) {
-         return new BufferedImage(3,4,BufferedImage.TYPE_CUSTOM);
+         return jniService.callStitcher();
     }
 }
