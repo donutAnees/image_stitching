@@ -10,7 +10,10 @@ export default function Samples() {
   return (
     <Hero>
       <div className="pt-20 pl-10">
-        <div className="text-white flex flex-col">
+        <div className="pb-5">
+          <h1 className="text-white text-xl font-bold">Download Sample Images to Stitch</h1>
+        </div>
+        <div className="text-white flex flex-col gap-3">
           {downloadLinks.map((link, index) => (
             <a
               key={index}
