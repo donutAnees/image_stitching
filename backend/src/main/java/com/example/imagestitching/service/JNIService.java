@@ -7,12 +7,13 @@ public class JNIService {
     }
 
     private native void callStitcher(ArrayList<String> paths);
-    
-    public static void main(String[] args){
-        JNIService demo = new JNIService();
-        ArrayList<String> paths = new ArrayList<>();
-        paths.add("/Users/anees/Desktop/im.png");
-        paths.add("/Users/anees/Desktop/im1.png");
-        demo.callStitcher(paths);
-    }
+
+    /* Uncomment if needed to just run this $ java -Djava.library.path=. JNIService.java */ 
+    // public static void main(String[] args){
+    //     JNIService demo = new JNIService();
+    //     ArrayList<String> paths = new ArrayList<>();
+    //     paths.add("/Users/anees/Desktop/im.png");
+    //     paths.add("/Users/anees/Desktop/im1.png");
+    //     demo.callStitcher(paths);
+    // }
 }

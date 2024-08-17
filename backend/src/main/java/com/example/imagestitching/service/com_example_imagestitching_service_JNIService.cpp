@@ -5,7 +5,7 @@
 
 JNIEXPORT void JNICALL Java_com_example_imagestitching_service_JNIService_callStitcher
   (JNIEnv *env, jobject obj, jobject pathsList){
-     // Get the ArrayList class
+    // Get the ArrayList class
     jclass arrayListClass = env->GetObjectClass(pathsList);
 
     // Get the size method ID
