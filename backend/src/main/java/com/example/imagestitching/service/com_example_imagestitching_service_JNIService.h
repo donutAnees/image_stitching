@@ -10,10 +10,10 @@ extern "C" {
 /*
  * Class:     com_example_imagestitching_service_JNIService
  * Method:    callStitcher
- * Signature: ()V
+ * Signature: (Ljava/util/ArrayList;)V
  */
 JNIEXPORT void JNICALL Java_com_example_imagestitching_service_JNIService_callStitcher
-  (JNIEnv *, jobject);
+  (JNIEnv *, jobject, jobject);
 
 #ifdef __cplusplus
 }
