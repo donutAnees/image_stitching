@@ -63,5 +63,6 @@ class Stitcher
         void StitchImages();
 };      
 
+void stitchImagesFromPaths(const std::vector<std::string>& paths);
 
 #endif 

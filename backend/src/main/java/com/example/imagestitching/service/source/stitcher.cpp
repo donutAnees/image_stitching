@@ -1,5 +1,4 @@
 #include "../header/stitcher.hpp"
-#include "../header/imageproc.hpp"
 
 const cv::Ptr<cv::Feature2D>  Stitcher::descriptor = cv::ORB::create(10000);
 const cv::BFMatcher Stitcher::matcher = cv::BFMatcher(cv::NORM_HAMMING2);
@@ -273,4 +272,20 @@ void Stitcher::StitchImages() {
         prevPano = cropBlack(result,gray);
     }
     cv::imwrite("result.jpg",prevPano);
+}
+
+void stitchImagesFromPaths(const std::vector<std::string>& paths) {
+    Stitcher stitch;
+    for (size_t i = 0; i < paths.size(); i++) {
+        const cv::Mat img = cv::imread(paths[i], cv::IMREAD_COLOR);
+        cv::Mat resized;
+        cv::Size size(800, img.rows * 600 / img.cols);
+        cv::resize(img, resized, size);
+        if (i == 0) {
+            stitch = Stitcher(resized);
+        } else {
+            stitch.addImage(resized);
+        }
+    }
+    stitch.StitchImages();
 }
