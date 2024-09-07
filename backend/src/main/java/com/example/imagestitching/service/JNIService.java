@@ -6,7 +6,7 @@ public class JNIService {
         System.loadLibrary("stitcher");
     }
 
-    private native void callStitcher(ArrayList<String> paths);
+    public native void callStitcher(ArrayList<String> paths);
 
     /* Uncomment if needed to just run this $ java -Djava.library.path=. JNIService.java */ 
     // public static void main(String[] args){
