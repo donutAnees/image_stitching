@@ -1,6 +1,9 @@
 package com.example.imagestitching.service;
+import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
 
+@Component
 public class JNIService {
     static {
         System.loadLibrary("stitcher");
