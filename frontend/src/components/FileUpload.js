@@ -4,12 +4,31 @@ import uploadimg from "../img/uploadsym.png";
 export default function FileUpload() {
   const [files, setFiles] = useState([]);
   const [isUploaded, setIsUploaded] = useState(false);
+  const [image, setImage] = useState(null);
 
   function upload() {
     let formdata = new FormData();
     for (let i = 0; i < files.length; i++) {
-      formdata.append(`file${i}`, files[i]);
+      formdata.append("files", files[i]);
     }
+    fetch("http://localhost:8080/api/stitch-images", {
+      method: "POST",
+      body: formdata
+    })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return response.blob();
+    })
+    .then((blob) => {
+      const imageUrl = URL.createObjectURL(blob);
+      setImage(imageUrl);
+    })
+    .catch((error) => {
+      console.error("Upload error:", error);
+      alert("Failed to upload files.");
+    })
   }
   function selectFiles(event) {
     const newFiles = Array.from(event.target.files);
@@ -99,14 +118,24 @@ export default function FileUpload() {
                 >
                   Add More
                 </label>
-                <label className="text-center cursor-pointer bg-white rounded-md font-semibold p-2 hover:bg-white hover:text-purple-600">
+                <button onClick={upload}
+                className="text-center cursor-pointer bg-white rounded-md font-semibold p-2 hover:bg-white hover:text-purple-600">
+                  
                   Stitch
-                </label>
+                </button>
               </div>
             </div>
           </>
         )}
       </form>
+
+      {/* Display Processed Image */}
+      {image && (
+        <div className="mt-5">
+          <h3 className="text-white text-lg">Procesed Image</h3>
+          <img src={image} alt="Processed Output" className="mt-2 border-2 border-white rounded-lg" />
+        </div>
+      )}
     </div>
   );
 }
